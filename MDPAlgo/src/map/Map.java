@@ -16,6 +16,13 @@ public class Map {
                 pointMap[i][j]=new Point(i,j,PointState.Unknown);
             }
     }
+    public Map(PointState state){
+        pointMap=new Point[MAX_X][MAX_Y];
+        for(int i=0;i<MAX_X;i++)
+            for(int j=0;j<MAX_Y;j++){
+                pointMap[i][j]=new Point(i,j,state);
+            }
+    }
     public Map(LinkedList<Vector> obstacleList){
         pointMap=new Point[MAX_X][MAX_Y];
         for(int i=0;i<MAX_X;i++)
