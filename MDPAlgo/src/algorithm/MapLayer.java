@@ -156,6 +156,13 @@ public class MapLayer {
             }
         return true;
     }
+    public boolean checkExplorable(Vector v){
+    	boolean isUpperBlocked=checkIsBlockFree(v.nAdd(new Vector(0,2)));
+    	boolean isLowerBlocked=checkIsBlockFree(v.nAdd(new Vector(0,-2)));
+    	boolean isRightBlocked=checkIsBlockFree(v.nAdd(new Vector(2,0)));
+    	boolean isLeftBlocked=checkIsBlockFree(v.nAdd(new Vector(-2,0)));    	
+    	return !(isUpperBlocked && isLowerBlocked && isRightBlocked && isLeftBlocked);
+    }
     
     public void setStateAt(Vector v,PointState pState){
         if(checkInsideBoundary(v)){
@@ -173,6 +180,14 @@ public class MapLayer {
             if(states[v.x][v.y]==PointState.IsFree)
                 return true;
         return false;
+    }
+    public boolean checkIsBlockFree(Vector v){
+    	boolean isFree=true;
+    	for(int i=-1;i<=1;i++)
+    		for(int j=-1;j<=1;j++)
+    			if(!checkIsFree(v.nAdd(new Vector(i,j))))
+    				isFree=false;
+    	return isFree;
     }
     public boolean checkIsUnknown(Vector v){
         if(checkInsideBoundary(v))

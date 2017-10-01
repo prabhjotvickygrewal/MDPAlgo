@@ -64,7 +64,7 @@ public class Algorithm {
         LinkedList<Vector> remainedPoint=mapLayer.getRemainedPoint(robot.getPos());
         LinkedList<Vector> legalRemainedPoint=new LinkedList<>();
         for(Vector v:remainedPoint)
-            if(mapLayer.checkEnclosureLargeEnough(v))
+            if(mapLayer.checkExplorable(v))
                 legalRemainedPoint.add(v);
         return legalRemainedPoint;
     }
