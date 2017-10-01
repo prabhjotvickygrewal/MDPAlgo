@@ -36,15 +36,6 @@ public class MapLayer {
             for(int j=-1;j<=1;j++)
                 setStateAt(pos.nAdd(new Vector(i,j)),PointState.IsFree);
         
-        if(s.left_l>0 && s.left_l<=Sensor_LongRange){
-            setStateAt(pos.nAdd(leftVector.nMultiply(s.left_l+1)).nAdd(downVector), PointState.Obstacle);
-            for(int i=1;i<s.left_l;i++)
-                setStateAt(pos.nAdd(leftVector.nMultiply(i+1)).nAdd(downVector), PointState.IsFree);
-        }
-        else
-            for(int i=1;i<=Sensor_LongRange;i++)
-                setStateAt(pos.nAdd(leftVector.nMultiply(i+1)).nAdd(downVector), PointState.IsFree);
-        
         if(s.left_m>0 && s.left_m<=Sensor_LongRange){
             setStateAt(pos.nAdd(leftVector.nMultiply(s.left_m+1)), PointState.Obstacle);
             for(int i=1;i<s.left_m;i++)
@@ -54,36 +45,18 @@ public class MapLayer {
             for(int i=1;i<=Sensor_LongRange;i++)
                 setStateAt(pos.nAdd(leftVector.nMultiply(i+1)), PointState.IsFree);
             
-        if(s.left_r>0 && s.left_r<=Sensor_LongRange){
-            setStateAt(pos.nAdd(leftVector.nMultiply(s.left_r+1)).nAdd(upVector), PointState.Obstacle);
-            for(int i=1;i<s.left_r;i++)
-                setStateAt(pos.nAdd(leftVector.nMultiply(i+1)).nAdd(upVector), PointState.IsFree);
-        }
-        else
-            for(int i=1;i<=Sensor_LongRange;i++)
-                setStateAt(pos.nAdd(leftVector.nMultiply(i+1)).nAdd(upVector), PointState.IsFree);
-        
-        if(s.right_r>0 && s.right_r<=Sensor_ShortRange){
-            setStateAt(pos.nAdd(rightVector.nMultiply(s.left_l+1)).nAdd(downVector), PointState.Obstacle);
-            for(int i=1;i<s.right_r;i++)
+        if(s.right_b>0 && s.right_b<=Sensor_ShortRange){
+            setStateAt(pos.nAdd(rightVector.nMultiply(s.right_b+1)).nAdd(downVector), PointState.Obstacle);
+            for(int i=1;i<s.right_b;i++)
                 setStateAt(pos.nAdd(rightVector.nMultiply(i+1)).nAdd(downVector), PointState.IsFree);
         }
         else
             for(int i=1;i<=Sensor_ShortRange;i++)
                 setStateAt(pos.nAdd(rightVector.nMultiply(i+1)).nAdd(downVector), PointState.IsFree);
-            
-        if(s.right_m>0 && s.right_m<=Sensor_ShortRange){
-            setStateAt(pos.nAdd(rightVector.nMultiply(s.left_l+1)), PointState.Obstacle);
-            for(int i=1;i<s.right_m;i++)
-                setStateAt(pos.nAdd(rightVector.nMultiply(i+1)), PointState.IsFree);
-        }
-        else
-            for(int i=1;i<=Sensor_ShortRange;i++)
-                setStateAt(pos.nAdd(rightVector.nMultiply(i+1)), PointState.IsFree);
         
-        if(s.right_l>0 && s.right_l<=Sensor_ShortRange){
-            setStateAt(pos.nAdd(rightVector.nMultiply(s.left_l+1)).nAdd(upVector), PointState.Obstacle);
-            for(int i=1;i<s.right_l;i++)
+        if(s.right_t>0 && s.right_t<=Sensor_ShortRange){
+            setStateAt(pos.nAdd(rightVector.nMultiply(s.right_t+1)).nAdd(upVector), PointState.Obstacle);
+            for(int i=1;i<s.right_t;i++)
                 setStateAt(pos.nAdd(rightVector.nMultiply(i+1)).nAdd(upVector), PointState.IsFree);
         }
         else
@@ -93,7 +66,7 @@ public class MapLayer {
         if(s.up_l>0 && s.up_l<=Sensor_ShortRange){
             setStateAt(pos.nAdd(upVector.nMultiply(s.up_l+1)).nAdd(leftVector), PointState.Obstacle);
             for(int i=1;i<s.up_l;i++)
-                setStateAt(pos.nAdd(upVector.nMultiply(s.up_l+1)).nAdd(leftVector), PointState.IsFree);
+                setStateAt(pos.nAdd(upVector.nMultiply(i+1)).nAdd(leftVector), PointState.IsFree);
         }
         else
             for(int i=1;i<=Sensor_ShortRange;i++)
@@ -156,13 +129,6 @@ public class MapLayer {
             }
         return true;
     }
-    public boolean checkExplorable(Vector v){
-    	boolean isUpperBlocked=checkIsBlockFree(v.nAdd(new Vector(0,2)));
-    	boolean isLowerBlocked=checkIsBlockFree(v.nAdd(new Vector(0,-2)));
-    	boolean isRightBlocked=checkIsBlockFree(v.nAdd(new Vector(2,0)));
-    	boolean isLeftBlocked=checkIsBlockFree(v.nAdd(new Vector(-2,0)));    	
-    	return !(isUpperBlocked && isLowerBlocked && isRightBlocked && isLeftBlocked);
-    }
     
     public void setStateAt(Vector v,PointState pState){
         if(checkInsideBoundary(v)){
@@ -180,14 +146,6 @@ public class MapLayer {
             if(states[v.x][v.y]==PointState.IsFree)
                 return true;
         return false;
-    }
-    public boolean checkIsBlockFree(Vector v){
-    	boolean isFree=true;
-    	for(int i=-1;i<=1;i++)
-    		for(int j=-1;j<=1;j++)
-    			if(!checkIsFree(v.nAdd(new Vector(i,j))))
-    				isFree=false;
-    	return isFree;
     }
     public boolean checkIsUnknown(Vector v){
         if(checkInsideBoundary(v))
