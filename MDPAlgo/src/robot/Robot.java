@@ -2,6 +2,8 @@
 package robot;
 import map.*;
 import java.util.LinkedList;
+
+import communications.Communication;
 /**
  *
  * @author user
@@ -11,28 +13,32 @@ public class Robot {
     private Direction ori;
     private Vector pos;
     private LinkedList<RobotAction> buffer;
-    public Robot(){
+    private boolean simulation; 
+    
+    public Robot(boolean s){
         map=new Map();
-        ori=Direction.Right;
+        ori=Direction.East;
         pos=new Vector(1,1);
         buffer=new LinkedList<RobotAction>();
+        simulation = s;
     }
     public void bufferAction(RobotAction action){
         buffer.add(action);
     }
     public void execute(RobotAction action){
         switch(action){
-            case MoveForward:
+            case Forward:
                 pos.add(ori.toVector());
                 break;
-            case MoveBackward:
+            case Backward:
                 pos.add(ori.getDown().toVector());
                 break;
-            case TurnRight:
+            case Right:
                 ori=ori.getRight();
                 break;
-            case TurnLeft:
+            case Left:
                 ori=ori.getLeft();
+                break;
         }
     }
     public void executeBuffered(){
@@ -48,5 +54,38 @@ public class Robot {
     }
     public Direction getOri(){
         return ori;
+    }
+    
+    public boolean getSimulation() {
+    	return simulation;
+    }
+    
+    public void moveForwardMultiple(int count) {
+    	if(count == 1) {
+    		execute(RobotAction.Forward);
+    	}
+    	else {
+    		Communication comm = Communication.getCommMgr();
+    		if(count == 10) {
+    			comm.sendMsg("0", Communication.INSTRUCTIONS);
+    		}
+    		else if(count < 10) {
+    			comm.sendMsg(Integer.toString(count), Communication.INSTRUCTIONS);
+    		}
+    		
+    		switch(ori) {
+    		case North:
+    			pos.x += count;
+    			break;
+    		case East:
+    			pos.y += count;
+    		case South:
+    			pos.x += count;
+    		case West:
+    			pos.y += count;
+    			break;
+    		}
+    		comm.sendMsg(this.getPos().x + ", " + this.getPos().y + ", " + this.getOri(), Communication.BOT_POS);
+    	}
     }
 }
