@@ -94,27 +94,27 @@ public class MapLayer {
     public LinkedList<Vector> getRemainedPoint(Vector pos){
         LinkedList<Vector> remainedPoint=new LinkedList<>();
         Vector curPoint;
-        for(int i=1;i<=Map.MAX_X;i++){
+        for(int i=1;i<Map.MAX_X;i++){
             curPoint=pos.nAdd(new Vector(-i,-i));
             for(int j=0;j<i*2;j++){
                 if(checkIsUnknown(curPoint))
                     remainedPoint.add(curPoint);
-                curPoint.add(new Vector(1,0));
+                curPoint=curPoint.nAdd(new Vector(1,0));
             }
             for(int j=0;j<i*2;j++){
                 if(checkIsUnknown(curPoint))
                     remainedPoint.add(curPoint);
-                curPoint.add(new Vector(0,1));
+                curPoint=curPoint.nAdd(new Vector(0,1));
             }
             for(int j=0;j<i*2;j++){
                 if(checkIsUnknown(curPoint))
                     remainedPoint.add(curPoint);
-                curPoint.add(new Vector(-1,0));
+                curPoint=curPoint.nAdd(new Vector(-1,0));
             }
             for(int j=0;j<i*2;j++){
                 if(checkIsUnknown(curPoint))
                     remainedPoint.add(curPoint);
-                curPoint.add(new Vector(0,-1));
+                curPoint=curPoint.nAdd(new Vector(0,-1));
             }
         }
         return remainedPoint;
@@ -128,6 +128,21 @@ public class MapLayer {
                     return false;
             }
         return true;
+    }
+    public boolean checkExplorable(Vector v){
+    	 boolean isUpperBlocked=checkIsBlockFree(v.nAdd(new Vector(0,2)));
+    	 boolean isLowerBlocked=checkIsBlockFree(v.nAdd(new Vector(0,-2)));
+    	 boolean isRightBlocked=checkIsBlockFree(v.nAdd(new Vector(2,0)));
+    	 boolean isLeftBlocked=checkIsBlockFree(v.nAdd(new Vector(-2,0)));    	
+    	 return !(isUpperBlocked && isLowerBlocked && isRightBlocked && isLeftBlocked);
+      }
+    public boolean checkIsBlockFree(Vector v){
+    	 boolean isFree=true;
+    	 for(int i=-1;i<=1;i++)
+    		 for(int j=-1;j<=1;j++)
+    			 if(!checkIsFree(v.nAdd(new Vector(i,j))))
+    				 isFree=false;
+    	 return isFree;
     }
     
     public void setStateAt(Vector v,PointState pState){
@@ -162,6 +177,6 @@ public class MapLayer {
             for(int j=0;j<Map.MAX_Y;j++)
                 if(states[i][j]!=PointState.Unknown)
                     knownCount++;
-        return knownCount*100/Map.MAX_X/Map.MAX_Y > covLimit;
+        return knownCount*100/Map.MAX_X/Map.MAX_Y >= covLimit;
     }
 }

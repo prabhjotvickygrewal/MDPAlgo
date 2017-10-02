@@ -2,13 +2,11 @@ package algorithm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Stack;
 
 import map.Map;
 import map.Point;
 import map.PointState;
-import map.Vector;
 import robot.Direction;
 import robot.Robot;
 import robot.RobotAction;
@@ -68,13 +66,6 @@ public class ShortestPath {
 		this.loopCount = 0;
 	}
 	
-	private boolean canVisit(Point point) {
-		if(point.getState() == PointState.IsFree)
-			return true;
-		else return false;
-	}
-	
-	
 	//returns the point to visit with lowest g(n) + h(n)
 	private Point pointWithLowestCost(int goalX, int goalY) {
 		int size = open.size();
@@ -94,7 +85,7 @@ public class ShortestPath {
 	
 	//Returns the heuristic cost from a point to the given destination
 	private double hCost(Point point, int goalX, int goalY) {
-		double movementCost = Math.abs(goalY - point.getPos().y) + Math.abs(goalX - point.getPos().x) * 10;
+		double movementCost = Math.abs((goalY - point.getPos().y) + Math.abs(goalX - point.getPos().x)) * 10;
 		
 		if (movementCost == 0)
 			return 0;
@@ -103,6 +94,14 @@ public class ShortestPath {
 		if(goalY - point.getPos().y != 0 && goalX - point.getPos().x != 0) {
 			turnCost = 20;
 		}
+		else if(goalY - point.getPos().y == 0 && goalX - point.getPos().x == 0) {
+			turnCost = 0;
+		}
+		else if (goalY - point.getPos().y == 0 || goalX - point.getPos().x == 0) {
+			turnCost = 10;
+		}
+//		if(goalX - point.getPos().x != 0)
+//			turnCost = turnCost + 20;
 		
 		return movementCost + turnCost;
 	}
@@ -124,25 +123,27 @@ public class ShortestPath {
 	
 	//Returns turning cost of specified turn
 	private Double getTurningCost(Direction i, Direction j) {
+		double turnCost = 20;
 		int numOfTurns = Math.abs(i.ordinal() - j.ordinal());
 		if (numOfTurns > 2)
 			numOfTurns = numOfTurns % 2;
-		return (double) (numOfTurns * 20);
+		return (numOfTurns * turnCost);
 	}
 	
 	//Returns the actual cost of moving from one point to a neighbouring point
 	private double gCost(Point a, Point b, Direction dir) {
 		double movementCost = 10;
 		
+		double turnCost;
 		Direction targetDir = getTargetDir(a.getPos().x, a.getPos().y, dir,b);
-		double turnCost = getTurningCost(dir, targetDir);
+		turnCost = getTurningCost(dir, targetDir);
 		
 		return movementCost + turnCost;
 	}
 		
 	//Returns shortest path from one point to another
 	public String executeShortestPath(int goalX, int goalY) {
-		System.out.println("Calculating fastest path from (" + currentPoint.getPos().x + ", " + currentPoint.getPos().y + ") to (" + goalX + ", " + goalY);
+		System.out.println("Calculating fastest path from (" + currentPoint.getPos().x + ", " + currentPoint.getPos().y + ") to (" + goalX + ", " + goalY + ")");
 		
 		Stack<Point> path;
 		do {
@@ -157,6 +158,7 @@ public class ShortestPath {
 			
 			closed.add(currentPoint);
 			open.remove(currentPoint);
+			System.out.println("Added (" + currentPoint.getPos().x + ", " + currentPoint.getPos().y + ")");
 			
 			if(closed.contains(map.getPointMap(goalX, goalY))) {
 				System.out.println("Reached goal!");
@@ -166,22 +168,22 @@ public class ShortestPath {
 			}
 			
 			//Setup neighbours of current cell
-			if(map.checkInsideBoundary(currentPoint)) {
+			if(map.checkInsideBoundary(currentPoint.getPos().x+1, currentPoint.getPos().y)) {
 				neighbours[0] = map.getPointMap(currentPoint.getPos().x + 1,  currentPoint.getPos().y);
 				if(neighbours[0].getState() != PointState.IsFree)
 					neighbours[0] = null;
 			}
-			if(map.checkInsideBoundary(currentPoint)) {
+			if(map.checkInsideBoundary(currentPoint.getPos().x-1, currentPoint.getPos().y)) {
 				neighbours[1] = map.getPointMap(currentPoint.getPos().x - 1, currentPoint.getPos().y);
 				if(neighbours[1].getState() != PointState.IsFree)
 					neighbours[1] = null;
 			}
-			if(map.checkInsideBoundary(currentPoint)) {
+			if(map.checkInsideBoundary(currentPoint.getPos().x,currentPoint.getPos().y-1)) {
 				neighbours[2] = map.getPointMap(currentPoint.getPos().x, currentPoint.getPos().y - 1);
 				if(neighbours[2].getState() != PointState.IsFree)
 					neighbours[2] = null;
 			}
-			if(map.checkInsideBoundary(currentPoint)) {
+			if(map.checkInsideBoundary(currentPoint.getPos().x,currentPoint.getPos().y+1)) {
 				neighbours[3] = map.getPointMap(currentPoint.getPos().x, currentPoint.getPos().y + 1);
 				if(neighbours[3].getState() != PointState.IsFree)
 					neighbours[3] = null;
@@ -194,8 +196,15 @@ public class ShortestPath {
 						continue;
 					if(!(open.contains(neighbours[i]))) {
 						parents.put(neighbours[i], currentPoint);
-						gCosts[neighbours[i].getPos().x][neighbours[i].getPos().y] = gCosts[currentPoint.getPos().x][currentPoint.getPos().y];
+						gCosts[neighbours[i].getPos().x][neighbours[i].getPos().y] = gCosts[currentPoint.getPos().x][currentPoint.getPos().y] + gCost(currentPoint,neighbours[i],currentDir);
 						open.add(neighbours[i]);						
+					}else {
+						double currentGScore = gCosts[neighbours[i].getPos().x][neighbours[i].getPos().y];
+						double newGScore = gCosts[currentPoint.getPos().x][currentPoint.getPos().y] + gCost(currentPoint, neighbours[i], currentDir);
+						if(newGScore < currentGScore) {
+							gCosts[neighbours[i].getPos().x][neighbours[i].getPos().y] = newGScore;
+							parents.put(neighbours[i], currentPoint);
+						}
 					}
 				}
 			}
@@ -232,24 +241,24 @@ public class ShortestPath {
 		Robot r = new Robot(true);
 		//Speed?
 		
-		while((robot.getPos().x != goalX) || (robot.getPos().y != goalY)) {
-			if(robot.getPos().x == p.getPos().x && robot.getPos().y == p.getPos().y) {
+		while((r.getPos().x != goalX) || (r.getPos().y != goalY)) {
+			if(r.getPos().x == p.getPos().x && r.getPos().y == p.getPos().y) {
 				p = path.pop();
 			}
 			
-			targetDir = getTargetDir(robot.getPos().x,robot.getPos().y,robot.getOri(),p);
+			targetDir = getTargetDir(r.getPos().x,r.getPos().y,r.getOri(),p);
 			
 			RobotAction ra;
 			
-			if(robot.getOri() != targetDir) {
-				ra = getTargetMove(robot.getOri(), targetDir); 
+			if(r.getOri() != targetDir) {
+				ra = getTargetMove(r.getOri(), targetDir); 
 			}
 			else {
 				ra = RobotAction.Forward;
 			}
 			
-			System.out.println("Move " + ra.name() + " from (" + robot.getPos().x +", " + robot.getPos().y);
-			robot.execute(ra);
+			System.out.println("Move " + ra.name() + " from (" + r.getPos().x +", " + r.getPos().y + ")");
+			r.execute(ra);
 			movement.add(ra);
 			movementString.append(ra.name());
 		}
