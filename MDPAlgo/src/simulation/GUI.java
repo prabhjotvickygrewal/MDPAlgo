@@ -20,6 +20,7 @@ import javax.swing.JLabel;
 import javax.swing.border.LineBorder;
 
 import java.awt.Color;
+import java.util.LinkedList;
 
 import robot.*;
 import map.*;
@@ -28,13 +29,16 @@ public class GUI extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField textField;
-	private JTextField textField_1;
-	private JTextField textField_2;
+	private JTextField timeLimitText;
+	private JTextField covLimitText;
 	private GridPanel gridPanel;
 	private Robot robot;
-	private Map map;
+	private Map realMap;
+        private Map robotMap;
 	public static final int BLOCK_SIZE=30;
 	public static final int GAP=1;
+        private static EventHandler eventHandler;
+        public static boolean isExploring=false;
 	/**
 	 * Launch the application.
 	 */
@@ -55,9 +59,27 @@ public class GUI extends JFrame {
 	 * Create the frame.
 	 */
 	public GUI() {
-		robot=new Robot();
-		map=new Map(PointState.IsFree);
-		
+        LinkedList<Vector> obstacle=new LinkedList<>();
+        obstacle.add(new Vector(14,4));
+        obstacle.add(new Vector(15,4));
+        obstacle.add(new Vector(16,4));
+        obstacle.add(new Vector(17,4));
+        obstacle.add(new Vector(18,4));
+        obstacle.add(new Vector(14,5));
+        obstacle.add(new Vector(14,6));
+        obstacle.add(new Vector(14,7));
+        obstacle.add(new Vector(14,3));
+        obstacle.add(new Vector(14,8));
+        obstacle.add(new Vector(10,5));
+        obstacle.add(new Vector(10,6));
+        obstacle.add(new Vector(10,7));
+        obstacle.add(new Vector(10,3));
+        realMap=new Map(obstacle);
+		robot=new Robot(true);
+//		realMap=new Map(PointState.IsFree);
+		eventHandler=new EventHandler(this);
+        robotMap=robot.getMap();
+
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 657, 663);
 		contentPane = new JPanel();
@@ -76,51 +98,94 @@ public class GUI extends JFrame {
 		contentPane.add(panel_1);
 		panel_1.setLayout(null);
 		
-		gridPanel=new GridPanel(map,robot);
-		panel.add(gridPanel);
-		
+
+        gridPanel=new GridPanel(realMap,robot);
+        panel.add(gridPanel);
+
 		JButton btnStartExploring = new JButton("Start Exploring");
 		btnStartExploring.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
+                            eventHandler.startExploration(robot, realMap,timeLimitText.getText(),covLimitText.getText());
+                            isExploring=true;
 			}
 		});
-		btnStartExploring.setBounds(82, 68, 113, 23);
+		btnStartExploring.setBounds(70, 68, 120, 23);
 		panel_1.add(btnStartExploring);
 		
 		JButton btnShortestPath = new JButton("Shortest Path");
-		btnShortestPath.setBounds(274, 68, 113, 23);
+		btnShortestPath.setBounds(190, 68, 120, 23);
 		panel_1.add(btnShortestPath);
 		
+		JButton btnRestartRobot = new JButton("Restart Robot");
+		btnRestartRobot.addMouseListener(new MouseAdapter(){
+			@Override
+			public void mouseClicked(MouseEvent arg0){
+				robot.restart();
+                gridPanel.getGridContainer().drawGrid(realMap, robot);
+			}
+		});
+		btnRestartRobot.setBounds(310, 68, 120, 23);
+		panel_1.add(btnRestartRobot);
+		
 		JButton btnExit = new JButton("Exit");
-		btnExit.setBounds(473, 68, 89, 23);
+		btnExit.addMouseListener(new MouseAdapter(){
+			@Override
+			public void mouseClicked(MouseEvent arg0){
+				System.exit(0);
+			}
+		});
+		btnExit.setBounds(430, 68, 120, 23);
 		panel_1.add(btnExit);
 		
 		textField = new JTextField();
-		textField.setBounds(82, 27, 189, 20);
+		textField.setBounds(50, 27, 120, 20);
 		panel_1.add(textField);
 		textField.setColumns(10);
 		
-		JButton btnImportMap = new JButton("Import Map");
-		btnImportMap.setBounds(283, 26, 89, 23);
-		panel_1.add(btnImportMap);
+		JButton btnLoadMap = new JButton("Load Map");
+        btnLoadMap.addMouseListener(new MouseAdapter(){
+        	@Override
+        	public void mouseClicked(MouseEvent arg0){
+        		isExploring=true;
+                 realMap=eventHandler.loadMap(textField.getText(), realMap);
+                 gridPanel.getGridContainer().drawGrid(realMap, robot);
+            }
+        });
+		btnLoadMap.setBounds(180, 26, 89, 23);
+		panel_1.add(btnLoadMap);
 		
+        JButton btnSaveMap = new JButton("Save Map");
+        btnSaveMap.addMouseListener(new MouseAdapter(){
+        	@Override
+        	public void mouseClicked(MouseEvent arg0){
+        		robotMap=robot.getMap();
+        		eventHandler.saveMap(textField.getText(), robotMap);
+        	}
+        });
+		btnSaveMap.setBounds(280, 26, 89, 23);
+		panel_1.add(btnSaveMap);
+                
 		JLabel lblTimeLimit = new JLabel("Time Limit");
-		lblTimeLimit.setBounds(408, 11, 46, 14);
+		lblTimeLimit.setBounds(408, 11, 60, 14);
 		panel_1.add(lblTimeLimit);
 		
 		JLabel lblCoverageLimit = new JLabel("Coverage Limit");
 		lblCoverageLimit.setBounds(496, 11, 89, 14);
 		panel_1.add(lblCoverageLimit);
 		
-		textField_1 = new JTextField();
-		textField_1.setBounds(408, 27, 46, 20);
-		panel_1.add(textField_1);
-		textField_1.setColumns(10);
+		timeLimitText = new JTextField();
+		timeLimitText.setBounds(408, 27, 46, 20);
+		panel_1.add(timeLimitText);
+		timeLimitText.setColumns(10);
 		
-		textField_2 = new JTextField();
-		textField_2.setBounds(506, 27, 46, 20);
-		panel_1.add(textField_2);
-		textField_2.setColumns(10);
+		covLimitText = new JTextField();
+		covLimitText.setBounds(506, 27, 46, 20);
+		panel_1.add(covLimitText);
+		covLimitText.setColumns(10);
 	}
+        
+        public GridPanel getGridPanel(){
+            return gridPanel;
+        }
 }
