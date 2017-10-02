@@ -22,7 +22,7 @@ public class Algorithm {
         mapLayer=new MapLayer(robot.getMap());
     }
     public void explore(int timeLimit, int covLimit) {      //timeLimit in second
-//        ShortestPath sp = new ShortestPath(map, robot);
+        ShortestPath sp = new ShortestPath(map, robot);
         do{
             scan();
             map.printMap();
@@ -33,18 +33,19 @@ public class Algorithm {
        
         while(!checkTimeLimitReached(timeLimit) && ! checkCovLimitReached(covLimit) && !exploreComplete()){
 	        	
-        	goal = getRemainedPoint().getFirst();
-//	        if(goal == null) {
-//	        	break;
-//	        }	
-//	        sp.executeShortestPath(goal.x, goal.y);
+        	goal = findNearestExploredPoint(getRemainedPoint().getFirst());
+	        
+        	if(goal == null) {
+	        	break;
+	        }	
+	        sp.executeShortestPath(goal.x, goal.y);
             do{
                 scan();
                 map.printMap();
                 System.out.println(robot.getPos() + "  " + robot.getOri());
                 followRightObstacle();
             }while(robot.getPos()!=goal);    //explore until get to the original position again
-//            sp.executeShortestPath(1, 1);
+            sp.executeShortestPath(1, 1);
         }
     }
     public void followRightObstacle(){
@@ -124,35 +125,35 @@ public class Algorithm {
     public Map getMap(){
         return map;
     }
-//    private Vector findNearestExploredPoint(Vector p) {
-//    	double distance;
-//    	double min = 2;
-//    	for(int i = 0 ; i < Map.MAX_X; i++)
-//    		for (int j = 0 ; i < Map.MAX_Y; j++) {
-//    			distance = Math.sqrt((p.x - i)^2+(p.y - j)^2);
-//    			if(distance < min && map.checkInsideBoundary(p)) {
-//    				Vector v = new Vector(i,j);
-//    				return v;
-//    			}
-//    		}
-//    	double min2 = 30;
-//    	for(int i = 0 ; i < Map.MAX_X; i++)
-//    		for (int j = 0 ; i < Map.MAX_Y; j++) {
-//    			distance = Math.sqrt((p.x - i)^2+(p.y - j)^2);
-//    			if(distance < min && map.checkInsideBoundary(p)) {
-//    				Vector v = new Vector(i,j);
-//    				return v;
-//    			}
-//    		}
-//    	double min3 = 40;
-//    	for(int i = 0 ; i < Map.MAX_X; i++)
-//    		for (int j = 0 ; i < Map.MAX_Y; j++) {
-//    			distance = Math.sqrt((p.x - i)^2+(p.y- j)^2);
-//    			if(distance < min && map.checkInsideBoundary(p)) {
-//    				Vector v = new Vector(i,j);
-//    				return v;
-//    			}
-//    		}
-//    	return null;
-//    }
+    private Vector findNearestExploredPoint(Vector p) {
+    	double distance;
+    	double min = 2;
+    	for(int i = 0 ; i < Map.MAX_X; i++)
+    		for (int j = 0 ; j < Map.MAX_Y; j++) {
+    			distance = Math.sqrt((p.x - i)*(p.x - i)+(p.y - j)*(p.y - j));
+    			if(distance < min && map.checkInsideBoundary(p) && map.checkIsFree(p)) {
+    				Vector v = new Vector(i,j);
+    				return v;
+    			}
+    		}
+    	double min2 = 3;
+    	for(int i = 0 ; i < Map.MAX_X; i++)
+    		for (int j = 0 ; j < Map.MAX_Y; j++) {
+    			distance = Math.sqrt((p.x - i)*(p.x - i)+(p.y - j)*(p.y - j));
+    			if(distance < min2 && map.checkInsideBoundary(p) && map.checkIsFree(p)) {
+    				Vector v = new Vector(i,j);
+    				return v;
+    			}
+    		}
+    	double min3 = 4;
+    	for(int i = 0 ; i < Map.MAX_X; i++)
+    		for (int j = 0 ; j < Map.MAX_Y; j++) {
+    			distance = Math.sqrt((p.x - i)*(p.x - i)+(p.y - j)*(p.y - j));
+    			if(distance < min3 && map.checkInsideBoundary(p) && map.checkIsFree(p)) {
+    				Vector v = new Vector(i,j);
+    				return v;
+    			}
+    		}
+    	return null;
+    }
 }

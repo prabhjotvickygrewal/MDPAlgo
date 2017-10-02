@@ -108,14 +108,14 @@ public class ShortestPath {
 	
 	//Returns the target direction of the bot from current pos to target point
 	private Direction getTargetDir(int robotX, int robotY, Direction robotDir, Point target) {
-		if(robotY - target.getPos().y > 0)
+		if(robotX - target.getPos().x > 0)
 			return Direction.West;
-		else if (target.getPos().y - robotY > 0)
+		else if (target.getPos().x - robotX > 0)
 			return Direction.East;
 		else {
-			if(robotX - target.getPos().x > 0)
+			if(robotY - target.getPos().y > 0)
 				return Direction.South;
-			else if (target.getPos().x - robotX > 0)
+			else if (target.getPos().y - robotY > 0)
 				return Direction.North;
 			else return robotDir;
 		}
@@ -263,7 +263,7 @@ public class ShortestPath {
 			movementString.append(ra.name());
 		}
 		
-		if(!robot.getSimulation() || explorationMode) {
+		if(robot.getSimulation() || explorationMode) {
 			for (RobotAction mm : movement) {
 				if(mm == RobotAction.Forward) {
 					if(!canMoveForward()) {
@@ -318,22 +318,22 @@ public class ShortestPath {
 		
 		switch(robot.getOri()) {
 		case North:
-			if(map.checkIsFree(map.getPointMap(x+2, y-1)) && map.checkIsFree(map.getPointMap(x+2, y)) && map.checkIsFree(map.getPointMap(x+2, y+1))) {
+			if(map.checkIsFree(map.getPointMap(x-1, y+2)) && map.checkIsFree(map.getPointMap(x, y+2)) && map.checkIsFree(map.getPointMap(x+1, y+2))) {
 				return true;
 			}
 			break;
 		case East:
-			if(map.checkIsFree(map.getPointMap(x+1, y+2)) && map.checkIsFree(map.getPointMap(x, y+2)) && map.checkIsFree(map.getPointMap(x-1, y+2))) {
+			if(map.checkIsFree(map.getPointMap(x+2, y-1)) && map.checkIsFree(map.getPointMap(x+2, y)) && map.checkIsFree(map.getPointMap(x+2, y+1))) {
 				return true;
 			}
 			break;
 		case South:
-			if(map.checkIsFree(map.getPointMap(x-2, y-1)) && map.checkIsFree(map.getPointMap(x-2, y)) && map.checkIsFree(map.getPointMap(x-2, y+1))) {
+			if(map.checkIsFree(map.getPointMap(x-1, y-2)) && map.checkIsFree(map.getPointMap(x, y-2)) && map.checkIsFree(map.getPointMap(x+1, y-2))) {
 				return true;
 			}
 			break;
 		case West:
-			if(map.checkIsFree(map.getPointMap(x+1, y-2)) && map.checkIsFree(map.getPointMap(x, y-2)) && map.checkIsFree(map.getPointMap(x-1, y-2))) {
+			if(map.checkIsFree(map.getPointMap(x-2, y-1)) && map.checkIsFree(map.getPointMap(x-2, y)) && map.checkIsFree(map.getPointMap(x-2, y+1))) {
 				return true;
 			}
 			break;				
