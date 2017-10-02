@@ -1,5 +1,6 @@
 package map;
-
+import java.util.*;
+import java.io.*;
 public class Descriptor {
 
 	public static PointState[][] getStatesFromHex(String hex1, String hex2){
@@ -89,5 +90,36 @@ public class Descriptor {
 		return hex2;
 	}
 
-	
+	public PointState[][] getStatesFromFile(String fileName){
+            String filePath=new File("").getAbsolutePath();
+            try{
+                BufferedReader br=new BufferedReader(new FileReader(
+                    filePath+File.separator+"src"+File.separator+"map"+File.separator+"test"+fileName));
+                String line1, line2;
+                line1=br.readLine();
+                line2=br.readLine();
+                if(line1!=null && line2!=null)
+                    return getStatesFromHex(line1,line2);
+                return null;
+            }
+            catch(IOException e){
+                e.printStackTrace();
+                return null;
+            }
+        }
+        public void writeFileFromStates(String fileName, PointState[][] states){
+            String hex1=getFirstStringFromStates(states);
+            String hex2=getSecondStringFromStates(states);
+            String filePath=new File("").getAbsolutePath();
+            try{
+                File file=new File(filePath+File.separator+"src"+File.separator+"map"+File.separator+"test"+fileName);
+                BufferedWriter br=new BufferedWriter(new FileWriter(file));
+                br.write(hex1);
+                br.newLine();
+                br.write(hex2);
+            }
+            catch(IOException e){
+                e.printStackTrace();
+            }
+        }
 }
