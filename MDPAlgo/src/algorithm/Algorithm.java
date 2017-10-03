@@ -22,16 +22,16 @@ public class Algorithm {
         map=robot.getMap();
         this.simulator=simulator;
         mapLayer=new MapLayer(robot.getMap());
-//        if(comm==null)
-//            comm =new Comm();
+        if(comm==null)
+            comm =new Comm();
     }
     public Algorithm(Simulator s, Robot r){
         robot=r;
         map=robot.getMap();
         simulator=s;
         mapLayer=new MapLayer(map);
-//        if(comm==null)
-//            comm=new Comm();
+        if(comm==null)
+            comm=new Comm();
     }
     public void explore(int timeLimit, int covLimit, GUI gui) {      //timeLimit in second
         ShortestPath sp = new ShortestPath(map, robot);
@@ -96,9 +96,11 @@ public class Algorithm {
         } catch(InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
-        map.printMap();
-//        comm.test();
-//        comm.sendToAndroid(String.format("%s%n%s", mapLayer.getFirstString(), mapLayer.getSecondString()));
+//        map.printMap();
+        comm.test();
+        System.out.println("Execute test");
+        comm.sendToAndroid(String.format("%s%n%s", mapLayer.getFirstString(), mapLayer.getSecondString()));
+        System.out.println("Send out string");
         gui.getGridPanel().getGridContainer().drawGrid(map, robot);
         System.out.println(robot.getPos() + "  " + robot.getOri());
         
