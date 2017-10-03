@@ -2,11 +2,13 @@ package algorithm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Stack;
 
 import map.Map;
 import map.Point;
 import map.PointState;
+import map.Vector;
 import robot.Direction;
 import robot.Robot;
 import robot.RobotAction;
@@ -21,22 +23,22 @@ public class ShortestPath {
 	private double[][] gCosts;
 	private Robot robot;
 	private Map map;
-	private Map actualMap = null;
+//	private Map actualMap = null;
 	private int loopCount;
 	private boolean explorationMode;
 	private MapLayer mapLayer;
 	private SensorData sensorData;
 	
 	public ShortestPath(Map map, Robot robot) {
-		this.actualMap = null;
+		this.map = null;
 		initObject(map,robot);
 	}
 	
-	public ShortestPath(Map map, Robot robot, Map actualMap) {
-		this.actualMap = actualMap;
-		this.explorationMode = false;
-		initObject(map, robot);
-	}
+//	public ShortestPath(Map map, Robot robot, Map actualMap) {
+//		this.actualMap = actualMap;
+//		this.explorationMode = false;
+//		initObject(map, robot);
+//	}
 	
 	public void initObject(Map map, Robot robot) {
 		this.robot = robot;
@@ -214,7 +216,7 @@ public class ShortestPath {
 		return null;
 	}
 	
-	
+
 	//Generates path in reverse using parents HashMap
 	private Stack<Point> getPath(int goalX, int goalY){
 		Stack<Point> actualPath = new Stack<>();
@@ -423,5 +425,39 @@ public class ShortestPath {
 			}
 			System.out.println("\n");
 		}
+	}
+	
+	public Point findNearestExploredPoint(LinkedList<Vector> v) {
+		Point[] neighbours = new Point[4];
+		int size = v.size(); 												// No of unknown points
+		for (int i = 0 ; i < size; i++) {
+			//Setup neighbours of current cell
+			if(map.checkInsideBoundary(v.get(i).x+1, v.get(i).y)) {
+				neighbours[0] = map.getPointMap(v.get(i).x + 1,  v.get(i).y);
+				if(neighbours[0].getState() != PointState.IsFree)
+					neighbours[0] = null;
+			}
+			if(map.checkInsideBoundary(v.get(i).x-1, v.get(i).y)) {
+				neighbours[1] = map.getPointMap(v.get(i).x - 1, v.get(i).y);
+				if(neighbours[1].getState() != PointState.IsFree)
+					neighbours[1] = null;
+			}
+			if(map.checkInsideBoundary(v.get(i).x,v.get(i).y-1)) {
+				neighbours[2] = map.getPointMap(v.get(i).x, v.get(i).y - 1);
+				if(neighbours[2].getState() != PointState.IsFree)
+					neighbours[2] = null;
+			}
+			if(map.checkInsideBoundary(v.get(i).x,v.get(i).y+1)) {
+				neighbours[3] = map.getPointMap(v.get(i).x, v.get(i).y + 1);
+				if(neighbours[3].getState() != PointState.IsFree)
+					neighbours[3] = null;
+			}
+			
+			for (int j = 0 ; j < 4; j++) {
+				if(neighbours[j] != null)
+					return neighbours[j];
+			}
+		}
+		return null;
 	}
 }
