@@ -30,8 +30,8 @@ public class Main {
         Algorithm algo=new Algorithm(simulator);
         algo.explore(1000, 101);
 //        algo.getMap().printMap();
-//        Robot robot = new Robot(true);
-//        ShortestPath sp = new ShortestPath(algo.getMap(), robot);
-//        sp.executeShortestPath(18, 13);
+        Robot robot = new Robot(true);
+        ShortestPath sp = new ShortestPath(algo.getMap(), robot);
+        sp.executeShortestPath(13, 18);
     }
 }
