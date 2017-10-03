@@ -19,7 +19,7 @@ public class EventHandler {
         this.gui=gui;
     }
     
-    public void startExploration(Robot r, Map map, String time, String cov){
+    public void startExploration(Robot r, Map map, String time, String cov, boolean isSimulating){
     	final int timeLimit,covLimit;
     	if(time.length()!=0)
     		timeLimit=Integer.parseInt(time);
@@ -30,7 +30,7 @@ public class EventHandler {
     	else
     		covLimit=100;
         Simulator simulator=new Simulator(map);
-        final Algorithm algo=new Algorithm(simulator,r);
+        final Algorithm algo=new Algorithm(simulator,r,isSimulating);
         explore=new SwingWorker<Integer, Integer>(){
             @Override
             public Integer doInBackground(){
@@ -42,6 +42,9 @@ public class EventHandler {
             }
         };
         explore.execute();
+    }
+    public void shortestPath(Robot r){
+    	
     }
     public Map loadMap(String fileName, Map map){
         if(fileName==null)

@@ -18,6 +18,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JLabel;
 import javax.swing.border.LineBorder;
+import javax.swing.JCheckBox;
 
 import java.awt.Color;
 import java.util.LinkedList;
@@ -59,24 +60,24 @@ public class GUI extends JFrame {
 	 * Create the frame.
 	 */
 	public GUI() {
-        LinkedList<Vector> obstacle=new LinkedList<>();
-        obstacle.add(new Vector(14,4));
-        obstacle.add(new Vector(15,4));
-        obstacle.add(new Vector(16,4));
-        obstacle.add(new Vector(17,4));
-        obstacle.add(new Vector(18,4));
-        obstacle.add(new Vector(14,5));
-        obstacle.add(new Vector(14,6));
-        obstacle.add(new Vector(14,7));
-        obstacle.add(new Vector(14,3));
-        obstacle.add(new Vector(14,8));
-        obstacle.add(new Vector(10,5));
-        obstacle.add(new Vector(10,6));
-        obstacle.add(new Vector(10,7));
-        obstacle.add(new Vector(10,3));
-        realMap=new Map(obstacle);
-		robot=new Robot(true);
-//		realMap=new Map(PointState.IsFree);
+//        LinkedList<Vector> obstacle=new LinkedList<>();
+//        obstacle.add(new Vector(14,4));
+//        obstacle.add(new Vector(15,4));
+//        obstacle.add(new Vector(16,4));
+//        obstacle.add(new Vector(17,4));
+//        obstacle.add(new Vector(18,4));
+//        obstacle.add(new Vector(14,5));
+//        obstacle.add(new Vector(14,6));
+//        obstacle.add(new Vector(14,7));
+//        obstacle.add(new Vector(14,3));
+//        obstacle.add(new Vector(14,8));
+//        obstacle.add(new Vector(10,5));
+//        obstacle.add(new Vector(10,6));
+//        obstacle.add(new Vector(10,7));
+//        obstacle.add(new Vector(10,3));
+//        realMap=new Map(obstacle);
+		robot=new Robot();
+		realMap=new Map(PointState.IsFree);
 		eventHandler=new EventHandler(this);
         robotMap=robot.getMap();
 
@@ -101,20 +102,30 @@ public class GUI extends JFrame {
 
         gridPanel=new GridPanel(realMap,robot);
         panel.add(gridPanel);
+        
+        JCheckBox isSimulation = new JCheckBox("Simulation");
+        isSimulation.setBounds(30, 68, 90, 23);
+        panel_1.add(isSimulation);
 
 		JButton btnStartExploring = new JButton("Start Exploring");
 		btnStartExploring.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-                            eventHandler.startExploration(robot, realMap,timeLimitText.getText(),covLimitText.getText());
+                            eventHandler.startExploration(robot, realMap,timeLimitText.getText(),covLimitText.getText(),isSimulation.isSelected());
                             isExploring=true;
 			}
 		});
-		btnStartExploring.setBounds(70, 68, 120, 23);
+		btnStartExploring.setBounds(120, 68, 120, 23);
 		panel_1.add(btnStartExploring);
 		
 		JButton btnShortestPath = new JButton("Shortest Path");
-		btnShortestPath.setBounds(190, 68, 120, 23);
+		btnShortestPath.addMouseListener(new MouseAdapter(){
+			@Override
+			public void mouseClicked(MouseEvent arg0){
+				eventHandler.shortestPath(robot);
+			}
+		});
+		btnShortestPath.setBounds(240, 68, 120, 23);
 		panel_1.add(btnShortestPath);
 		
 		JButton btnRestartRobot = new JButton("Restart Robot");
@@ -125,7 +136,7 @@ public class GUI extends JFrame {
                 gridPanel.getGridContainer().drawGrid(realMap, robot);
 			}
 		});
-		btnRestartRobot.setBounds(310, 68, 120, 23);
+		btnRestartRobot.setBounds(360, 68, 120, 23);
 		panel_1.add(btnRestartRobot);
 		
 		JButton btnExit = new JButton("Exit");
@@ -135,7 +146,7 @@ public class GUI extends JFrame {
 				System.exit(0);
 			}
 		});
-		btnExit.setBounds(430, 68, 120, 23);
+		btnExit.setBounds(480, 68, 120, 23);
 		panel_1.add(btnExit);
 		
 		textField = new JTextField();
