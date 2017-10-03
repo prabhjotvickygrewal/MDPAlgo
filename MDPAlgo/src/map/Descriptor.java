@@ -101,7 +101,7 @@ public class Descriptor {
             String filePath=new File("").getAbsolutePath();
             try{
                 BufferedReader br=new BufferedReader(new FileReader(
-                    filePath+File.separator+"src"+File.separator+"map"+File.separator+"test"+File.separator+fileName));
+                    filePath+File.separator+"test"+File.separator+fileName));
                 String line1, line2;
                 line1=br.readLine();
                 System.out.println(line1);
@@ -120,11 +120,11 @@ public class Descriptor {
             String hex1=getFirstStringFromStates(states);
             String hex2=getSecondStringFromStates(states);
             String filePath=new File("").getAbsolutePath();
-            System.out.println(filePath+File.separator+"src"+File.separator+"map"+File.separator+"result"+File.separator+fileName);
+            System.out.println(filePath+File.separator+"result"+File.separator+fileName);
             if(hex1.length()!=0 && hex2.length()!=0)
 	            try{
 	//                File file=new File(filePath+File.separator+"src"+File.separator+"map"+File.separator+"result"+File.separator+fileName);
-	                Files.write(Paths.get(filePath+File.separator+"src"+File.separator+"map"+File.separator+"result"+File.separator+fileName), 
+	                Files.write(Paths.get(filePath+File.separator+"result"+File.separator+fileName), 
 	                		String.format("%s%n%s", hex1, hex2).getBytes(),
 	                		StandardOpenOption.CREATE);
 	//                BufferedWriter br=new BufferedWriter(new FileWriter(file, true));
