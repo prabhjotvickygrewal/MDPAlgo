@@ -1,6 +1,8 @@
 
 package robot;
+import communication.Comm;
 import map.*;
+import algorithm.Algorithm;
 import java.util.LinkedList;
 
 //import communications.Communication;
@@ -13,14 +15,12 @@ public class Robot {
     private Direction ori;
     private Vector pos;
     private LinkedList<RobotAction> buffer;
-    private boolean simulation; 
     
-    public Robot(boolean s){
+    public Robot(){
         map=new Map();
         ori=Direction.East;
         pos=new Vector(1,1);
         buffer=new LinkedList<RobotAction>();
-        simulation = s;
     }
     public void bufferAction(RobotAction action){
         buffer.add(action);
@@ -29,15 +29,33 @@ public class Robot {
         switch(action){
             case Forward:
                 pos.add(ori.toVector());
+                if(!Algorithm.isSimulating){
+                    Comm.sendToRobot("1,1\n");
+                    while(!Comm.checkActionCompleted());
+                }
                 break;
             case Backward:
                 pos.add(ori.getDown().toVector());
+                if(!Algorithm.isSimulating){
+                    Comm.sendToRobot("2,180,1\n");
+                    while(!Comm.checkActionCompleted());
+                    Comm.sendToRobot("1,1\n");
+                    while(!Comm.checkActionCompleted());
+                }
                 break;
             case Right:
                 ori=ori.getRight();
+                if(!Algorithm.isSimulating){
+                    Comm.sendToRobot("2,90,1\n");
+                    while(!Comm.checkActionCompleted());
+                }
                 break;
             case Left:
                 ori=ori.getLeft();
+                if(!Algorithm.isSimulating){
+                    Comm.sendToRobot("2,90,0\n");
+                    while(!Comm.checkActionCompleted());
+                }
                 break;
         }
     }
@@ -56,15 +74,17 @@ public class Robot {
         return ori;
     }
     
-    public boolean getSimulation() {
-    	return simulation;
-    }
+//    public boolean getSimulation() {
+//    	return isSimulating;
+//    }
     public void restart(){
-    	if(simulation){
+    	if(Algorithm.isSimulating){
     		ori=Direction.East;
     		pos=new Vector(1,1);
     		map=new Map();
     	}
+    	else
+    		;//shortest path added here?
     		
     }
     

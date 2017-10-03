@@ -17,23 +17,27 @@ public class Algorithm {
     private static long startTime=System.currentTimeMillis();
     private static long currentTime;
     private static Comm comm;
-    public Algorithm(Simulator simulator){
-        robot=new Robot(true);
+    public static boolean isSimulating;
+    public Algorithm(Simulator simulator, boolean isSimulating){
+        robot=new Robot();
         map=robot.getMap();
-        this.simulator=simulator;
+        Algorithm.simulator=simulator;
         mapLayer=new MapLayer(robot.getMap());
-        if(comm==null)
-            comm =new Comm();
+        Algorithm.isSimulating=isSimulating;
+//        if(comm==null)
+//            comm =new Comm();
     }
-    public Algorithm(Simulator s, Robot r){
+    public Algorithm(Simulator s, Robot r, boolean isSimulating){
         robot=r;
         map=robot.getMap();
         simulator=s;
         mapLayer=new MapLayer(map);
-        if(comm==null)
-            comm=new Comm();
+        Algorithm.isSimulating=isSimulating;
+//        if(comm==null)
+//            comm=new Comm();
     }
     public void explore(int timeLimit, int covLimit, GUI gui) {      //timeLimit in second
+    	startTime=System.currentTimeMillis();
         ShortestPath sp = new ShortestPath(map, robot);
         do{
             scan(gui);        
@@ -51,13 +55,13 @@ public class Algorithm {
 	        sp.executeShortestPath(goal.x, goal.y, gui);
             do{
                 scan(gui);
-                try {
-                    Thread.sleep(200);                 //1000 milliseconds is one second.
-                } catch(InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                }
-                map.printMap();
-                gui.getGridPanel().getGridContainer().drawGrid(map, robot);
+//                try {
+//                    Thread.sleep(400);                 //1000 milliseconds is one second.
+//                } catch(InterruptedException ex) {
+//                    Thread.currentThread().interrupt();
+//                }
+//                map.printMap();
+//                gui.getGridPanel().getGridContainer().drawGrid(map, robot);
                 System.out.println(robot.getPos() + "  " + robot.getOri());
                 followRightObstacle(gui);
             }while(robot.getPos()!=goal);    //explore until get to the original position again
@@ -89,18 +93,28 @@ public class Algorithm {
         }
     }
     public void scan(GUI gui){
-        SensorData s=simulator.getSensorData(robot);
+    	SensorData s;
+    	
+    	if(isSimulating){
+	        s=simulator.getSensorData(robot);
+	        try {
+	            Thread.sleep(400);                 //1000 milliseconds is one second.
+	        } catch(InterruptedException ex) {
+	            Thread.currentThread().interrupt();
+	        }
+    	}
+    	else{
+    		Comm.sendToRobot("4\n");
+    		s=new SensorData(Comm.receiveSensorData());
+    	}
+    	
         mapLayer.processSensorData(s, robot);
-        try {
-            Thread.sleep(200);                 //1000 milliseconds is one second.
-        } catch(InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        }
+
 //        map.printMap();
-        comm.test();
-        System.out.println("Execute test");
-        comm.sendToAndroid(String.format("%s%n%s", mapLayer.getFirstString(), mapLayer.getSecondString()));
-        System.out.println("Send out string");
+//        comm.test();
+//        System.out.println("Execute test");
+//        comm.sendToAndroid(String.format("%s%n%s", mapLayer.getFirstString(), mapLayer.getSecondString()));
+//        System.out.println("Send out string");
         gui.getGridPanel().getGridContainer().drawGrid(map, robot);
         System.out.println(robot.getPos() + "  " + robot.getOri());
         
