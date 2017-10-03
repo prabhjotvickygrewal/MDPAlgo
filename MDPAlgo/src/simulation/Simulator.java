@@ -23,7 +23,7 @@ public class Simulator {
         data.up_l=getObstacleAt(pos.nAdd(ori.toVector()).nAdd(leftVector), ori, MapLayer.Sensor_ShortRange);
         data.up_m=getObstacleAt(pos.nAdd(ori.toVector()), ori, MapLayer.Sensor_ShortRange);
         data.up_r=getObstacleAt(pos.nAdd(ori.toVector()).nAdd(rightVector), ori, MapLayer.Sensor_ShortRange);
-        data.left_m=getObstacleAt(pos.nAdd(leftVector), ori.getLeft(), MapLayer.Sensor_LongRange);
+        data.left_t=getObstacleAt(pos.nAdd(leftVector).nAdd(ori.toVector()), ori.getLeft(), MapLayer.Sensor_LongRange);
         data.right_t=getObstacleAt(pos.nAdd(rightVector).nAdd(ori.toVector()), ori.getRight(), MapLayer.Sensor_ShortRange);
         data.right_b=getObstacleAt(pos.nAdd(rightVector).nAdd(downVector), ori.getRight(), MapLayer.Sensor_ShortRange);
         
