@@ -3,7 +3,7 @@ package algorithm;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
-
+import simulation.*;
 import map.Map;
 import map.Point;
 import map.PointState;
@@ -142,7 +142,7 @@ public class ShortestPath {
 	}
 		
 	//Returns shortest path from one point to another
-	public String executeShortestPath(int goalX, int goalY) {
+	public String executeShortestPath(int goalX, int goalY, GUI gui) {
 		System.out.println("Calculating fastest path from (" + currentPoint.getPos().x + ", " + currentPoint.getPos().y + ") to (" + goalX + ", " + goalY + ")");
 		
 		Stack<Point> path;
@@ -164,7 +164,7 @@ public class ShortestPath {
 				System.out.println("Reached goal!");
 				path = getPath(goalX, goalY);
 				printShortestPath(path);
-				return shortestPathMovements(path, goalX, goalY);
+				return shortestPathMovements(path, goalX, goalY, gui);
 			}
 			
 			//Setup neighbours of current cell
@@ -232,7 +232,7 @@ public class ShortestPath {
 	
 	
 	//Returns movements for shortestpath
-	private String shortestPathMovements(Stack<Point> path, int goalX, int goalY) {
+	private String shortestPathMovements(Stack<Point> path, int goalX, int goalY, GUI gui) {
 		StringBuilder movementString = new StringBuilder();
 		
 		Point p = path.pop();
@@ -256,8 +256,13 @@ public class ShortestPath {
 			else {
 				ra = RobotAction.Forward;
 			}
-			
+			try {
+                            Thread.sleep(1000);                 //1000 milliseconds is one second.
+                        } catch(InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                        }
 			System.out.println("Move " + ra.name() + " from (" + r.getPos().x +", " + r.getPos().y + ")");
+                        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
 			r.execute(ra);
 			movement.add(ra);
 			movementString.append(ra.name());
@@ -287,13 +292,13 @@ public class ShortestPath {
 				if(mm == RobotAction.Forward) {
 					fCount++;
 					if(fCount == 10) {
-						robot.moveForwardMultiple(fCount);
+//						robot.moveForwardMultiple(fCount);
 						fCount = 0;
 						//Update map
 						}
 					}else if (mm == RobotAction.Left || mm == RobotAction.Right) {
 						if(fCount > 0) {
-							robot.moveForwardMultiple(fCount);
+//							robot.moveForwardMultiple(fCount);
 							fCount = 0;
 							//update map
 						}
@@ -303,7 +308,7 @@ public class ShortestPath {
 					}
 				}
 			if(fCount > 0) {
-				robot.moveForwardMultiple(fCount);
+//				robot.moveForwardMultiple(fCount);
 				//Update map
 			}
 		}

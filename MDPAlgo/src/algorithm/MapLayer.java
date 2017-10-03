@@ -36,14 +36,14 @@ public class MapLayer {
             for(int j=-1;j<=1;j++)
                 setStateAt(pos.nAdd(new Vector(i,j)),PointState.IsFree);
         
-        if(s.left_m>0 && s.left_m<=Sensor_LongRange){
-            setStateAt(pos.nAdd(leftVector.nMultiply(s.left_m+1)), PointState.Obstacle);
-            for(int i=1;i<s.left_m;i++)
-                setStateAt(pos.nAdd(leftVector.nMultiply(i+1)), PointState.IsFree);
+        if(s.left_t>0 && s.left_t<=Sensor_LongRange){
+            setStateAt(pos.nAdd(leftVector.nMultiply(s.left_t+1).nAdd(upVector)), PointState.Obstacle);
+            for(int i=1;i<s.left_t;i++)
+                setStateAt(pos.nAdd(leftVector.nMultiply(i+1).nAdd(upVector)), PointState.IsFree);
         }
         else
             for(int i=1;i<=Sensor_LongRange;i++)
-                setStateAt(pos.nAdd(leftVector.nMultiply(i+1)), PointState.IsFree);
+                setStateAt(pos.nAdd(leftVector.nMultiply(i+1).nAdd(upVector)), PointState.IsFree);
             
         if(s.right_b>0 && s.right_b<=Sensor_ShortRange){
             setStateAt(pos.nAdd(rightVector.nMultiply(s.right_b+1)).nAdd(downVector), PointState.Obstacle);
@@ -178,5 +178,11 @@ public class MapLayer {
                 if(states[i][j]!=PointState.Unknown)
                     knownCount++;
         return knownCount*100/Map.MAX_X/Map.MAX_Y >= covLimit;
+    }
+    public String getFirstString(){
+        return Descriptor.getFirstStringFromStates(states);
+    }
+    public String getSecondString(){
+        return Descriptor.getSecondStringFromStates(states);
     }
 }

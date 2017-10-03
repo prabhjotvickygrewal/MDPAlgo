@@ -3,6 +3,7 @@ package algorithm;
 import map.*;
 import robot.*;
 import simulation.*;
+import communication.*;
 import java.util.LinkedList;
 /**
  *
@@ -15,19 +16,28 @@ public class Algorithm {
     private static MapLayer mapLayer;
     private static long startTime=System.currentTimeMillis();
     private static long currentTime;
+    private static Comm comm;
     public Algorithm(Simulator simulator){
         robot=new Robot(true);
         map=robot.getMap();
         this.simulator=simulator;
         mapLayer=new MapLayer(robot.getMap());
+//        if(comm==null)
+//            comm =new Comm();
     }
-    public void explore(int timeLimit, int covLimit) {      //timeLimit in second
+    public Algorithm(Simulator s, Robot r){
+        robot=r;
+        map=robot.getMap();
+        simulator=s;
+        mapLayer=new MapLayer(map);
+//        if(comm==null)
+//            comm=new Comm();
+    }
+    public void explore(int timeLimit, int covLimit, GUI gui) {      //timeLimit in second
         ShortestPath sp = new ShortestPath(map, robot);
         do{
-            scan();
-            map.printMap();
-            System.out.println(robot.getPos() + "  " + robot.getOri());
-            followRightObstacle();
+            scan(gui);        
+            followRightObstacle(gui);
         }while(!checkTimeLimitReached(timeLimit) && !checkCovLimitReached(covLimit) && !reachStartZone());
         Vector goal;
        
@@ -38,17 +48,23 @@ public class Algorithm {
         	if(goal == null) {
 	        	break;
 	        }	
-	        sp.executeShortestPath(goal.x, goal.y);
+	        sp.executeShortestPath(goal.x, goal.y, gui);
             do{
-                scan();
+                scan(gui);
+                try {
+                    Thread.sleep(200);                 //1000 milliseconds is one second.
+                } catch(InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
                 map.printMap();
+                gui.getGridPanel().getGridContainer().drawGrid(map, robot);
                 System.out.println(robot.getPos() + "  " + robot.getOri());
-                followRightObstacle();
+                followRightObstacle(gui);
             }while(robot.getPos()!=goal);    //explore until get to the original position again
-            sp.executeShortestPath(1, 1);
+            sp.executeShortestPath(1, 1, gui);
         }
     }
-    public void followRightObstacle(){
+    public void followRightObstacle(GUI gui){
         if(isRightFree()){
             robot.bufferAction(RobotAction.Right);
             robot.bufferAction(RobotAction.Forward);
@@ -59,7 +75,7 @@ public class Algorithm {
             while(!isUpFree()){
                 robot.bufferAction(RobotAction.Left);
                 robot.executeBuffered();
-                scan();
+                scan(gui);
                 map.printMap();
                 System.out.println(robot.getPos() + "  " + robot.getOri());
 
@@ -72,9 +88,20 @@ public class Algorithm {
 
         }
     }
-    public void scan(){
+    public void scan(GUI gui){
         SensorData s=simulator.getSensorData(robot);
         mapLayer.processSensorData(s, robot);
+        try {
+            Thread.sleep(200);                 //1000 milliseconds is one second.
+        } catch(InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+        map.printMap();
+//        comm.test();
+//        comm.sendToAndroid(String.format("%s%n%s", mapLayer.getFirstString(), mapLayer.getSecondString()));
+        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
+        System.out.println(robot.getPos() + "  " + robot.getOri());
+        
     }
     public LinkedList<Vector> getRemainedPoint(){
         LinkedList<Vector> remainedPoint=mapLayer.getRemainedPoint(robot.getPos());
