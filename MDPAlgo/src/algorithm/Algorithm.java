@@ -29,24 +29,25 @@ public class Algorithm {
             System.out.println(robot.getPos() + "  " + robot.getOri());
             followRightObstacle();
         }while(!checkTimeLimitReached(timeLimit) && !checkCovLimitReached(covLimit) && !reachStartZone());
-        Vector goal;
+        Point goal;
        
-        while(!checkTimeLimitReached(timeLimit) && ! checkCovLimitReached(covLimit) && !exploreComplete()){
-	        	
-        	goal = findNearestExploredPoint(getRemainedPoint().getFirst());
-	        
-        	if(goal == null) {
-	        	break;
-	        }	
-	        sp.executeShortestPath(goal.x, goal.y);
-            do{
-                scan();
-                map.printMap();
-                System.out.println(robot.getPos() + "  " + robot.getOri());
-                followRightObstacle();
-            }while(robot.getPos()!=goal);    //explore until get to the original position again
-            sp.executeShortestPath(1, 1);
-        }
+//        while(!checkTimeLimitReached(timeLimit) && ! checkCovLimitReached(covLimit) && !exploreComplete()){
+//	        	
+//        	goal = sp.findNearestExploredPoint(getRemainedPoint());
+//	        
+//        	if(goal == null) {
+//        		System.out.println("Unable to achieve full exploration as unknown points have no free neighbours.");
+//	        	break;
+//	        }	
+//	        sp.executeShortestPath(goal.getPos().x, goal.getPos().y);
+//            do{
+//                scan();
+//                map.printMap();
+//                System.out.println(robot.getPos() + "  " + robot.getOri());
+//                followRightObstacle();
+//            }while(robot.getPos().x !=goal.getPos().x && robot.getPos().y != goal.getPos().y);    //explore until get to the original position again
+//            sp.executeShortestPath(1, 1);
+//        }
     }
     public void followRightObstacle(){
         if(isRightFree()){
@@ -125,35 +126,35 @@ public class Algorithm {
     public Map getMap(){
         return map;
     }
-    private Vector findNearestExploredPoint(Vector p) {
-    	double distance;
-    	double min = 2;
-    	for(int i = 0 ; i < Map.MAX_X; i++)
-    		for (int j = 0 ; j < Map.MAX_Y; j++) {
-    			distance = Math.sqrt((p.x - i)*(p.x - i)+(p.y - j)*(p.y - j));
-    			if(distance < min && map.checkInsideBoundary(p) && map.checkIsFree(p)) {
-    				Vector v = new Vector(i,j);
-    				return v;
-    			}
-    		}
-    	double min2 = 3;
-    	for(int i = 0 ; i < Map.MAX_X; i++)
-    		for (int j = 0 ; j < Map.MAX_Y; j++) {
-    			distance = Math.sqrt((p.x - i)*(p.x - i)+(p.y - j)*(p.y - j));
-    			if(distance < min2 && map.checkInsideBoundary(p) && map.checkIsFree(p)) {
-    				Vector v = new Vector(i,j);
-    				return v;
-    			}
-    		}
-    	double min3 = 4;
-    	for(int i = 0 ; i < Map.MAX_X; i++)
-    		for (int j = 0 ; j < Map.MAX_Y; j++) {
-    			distance = Math.sqrt((p.x - i)*(p.x - i)+(p.y - j)*(p.y - j));
-    			if(distance < min3 && map.checkInsideBoundary(p) && map.checkIsFree(p)) {
-    				Vector v = new Vector(i,j);
-    				return v;
-    			}
-    		}
-    	return null;
-    }
+//    private Vector findNearestExploredPoint(Vector p) {
+//    	double distance;
+//    	double min = 2;
+//    	for(int i = 0 ; i < Map.MAX_X; i++)
+//    		for (int j = 0 ; j < Map.MAX_Y; j++) {
+//    			distance = Math.sqrt((p.x - i)*(p.x - i)+(p.y - j)*(p.y - j));
+//    			if(distance < min && map.checkIsFree(new Vector(i,j))) {
+//    				Vector v = new Vector(i,j);
+//    				return v;
+//    			}
+//    		}
+//    	double min2 = 3;
+//    	for(int i = 0 ; i < Map.MAX_X; i++)
+//    		for (int j = 0 ; j < Map.MAX_Y; j++) {
+//    			distance = Math.sqrt((p.x - i)*(p.x - i)+(p.y - j)*(p.y - j));
+//    			if(distance < min2 && map.checkIsFree(new Vector(i,j))) {
+//    				Vector v = new Vector(i,j);
+//    				return v;
+//    			}
+//    		}
+//    	double min3 = 4;
+//    	for(int i = 0 ; i < Map.MAX_X; i++)
+//    		for (int j = 0 ; j < Map.MAX_Y; j++) {
+//    			distance = Math.sqrt((p.x - i)*(p.x - i)+(p.y - j)*(p.y - j));
+//    			if(distance < min3 && map.checkIsFree(new Vector(i,j))) {
+//    				Vector v = new Vector(i,j);
+//    				return v;
+//    			}
+//    		}
+//    	return null;
+//    }
 }
