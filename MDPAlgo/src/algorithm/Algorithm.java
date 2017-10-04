@@ -24,8 +24,8 @@ public class Algorithm {
         Algorithm.simulator=simulator;
         mapLayer=new MapLayer(robot.getMap());
         Algorithm.isSimulating=isSimulating;
-//        if(comm==null)
-//            comm =new Comm();
+        if(comm==null)
+            comm =new Comm();
     }
     public Algorithm(Simulator s, Robot r, boolean isSimulating){
         robot=r;
@@ -33,14 +33,16 @@ public class Algorithm {
         simulator=s;
         mapLayer=new MapLayer(map);
         Algorithm.isSimulating=isSimulating;
-//        if(comm==null)
-//            comm=new Comm();
+        if(comm==null)
+            comm=new Comm();
     }
     public void explore(int timeLimit, int covLimit, GUI gui) {      //timeLimit in second
     	startTime=System.currentTimeMillis();
+    	timeLimit++;
         ShortestPath sp = new ShortestPath(map, robot);
         do{
-            scan(gui);        
+            scan(gui);
+            Calibration.calibrate(robot, mapLayer);
             followRightObstacle(gui);
         }while(!checkTimeLimitReached(timeLimit) && !checkCovLimitReached(covLimit) && !reachStartZone());
         Vector goal;
@@ -55,13 +57,7 @@ public class Algorithm {
 	        sp.executeShortestPath(goal.x, goal.y, gui);
             do{
                 scan(gui);
-//                try {
-//                    Thread.sleep(400);                 //1000 milliseconds is one second.
-//                } catch(InterruptedException ex) {
-//                    Thread.currentThread().interrupt();
-//                }
-//                map.printMap();
-//                gui.getGridPanel().getGridContainer().drawGrid(map, robot);
+                Calibration.calibrate(robot, mapLayer);
                 System.out.println(robot.getPos() + "  " + robot.getOri());
                 followRightObstacle(gui);
             }while(robot.getPos()!=goal);    //explore until get to the original position again
@@ -111,10 +107,8 @@ public class Algorithm {
         mapLayer.processSensorData(s, robot);
 
 //        map.printMap();
-//        comm.test();
-//        System.out.println("Execute test");
-//        comm.sendToAndroid(String.format("%s%n%s", mapLayer.getFirstString(), mapLayer.getSecondString()));
-//        System.out.println("Send out string");
+        Comm.sendToAndroid(String.format("%s%n%s", mapLayer.getFirstString(), mapLayer.getSecondString()));
+        System.out.println("Send out string");
         gui.getGridPanel().getGridContainer().drawGrid(map, robot);
         System.out.println(robot.getPos() + "  " + robot.getOri());
         

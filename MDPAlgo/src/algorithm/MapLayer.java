@@ -144,6 +144,7 @@ public class MapLayer {
     				 isFree=false;
     	 return isFree;
     }
+
     
     public void setStateAt(Vector v,PointState pState){
         if(checkInsideBoundary(v)){

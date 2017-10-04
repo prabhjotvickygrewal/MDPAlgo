@@ -3,6 +3,8 @@ package robot;
 import communication.Comm;
 import map.*;
 import algorithm.Algorithm;
+import algorithm.Calibration;
+
 import java.util.LinkedList;
 
 //import communications.Communication;
@@ -33,6 +35,7 @@ public class Robot {
                     Comm.sendToRobot("1,1\n");
                     while(!Comm.checkActionCompleted());
                 }
+                Calibration.addMoveCount();
                 break;
             case Backward:
                 pos.add(ori.getDown().toVector());
@@ -42,6 +45,7 @@ public class Robot {
                     Comm.sendToRobot("1,1\n");
                     while(!Comm.checkActionCompleted());
                 }
+                Calibration.addMoveCount();
                 break;
             case Right:
                 ori=ori.getRight();

@@ -25,51 +25,68 @@ public class SensorData {
         String s="";
         data= (data.replaceAll("\n", "")).replaceAll("\r", "")+",";
         
-        while(data.charAt(cur)!=',')           //right bottom sensor
+        while(data.charAt(cur)!=','){           //right bottom sensor
             s=s+data.charAt(cur);
+            cur++;
+        }
         cur++;
         temp=Integer.parseInt(s);
         right_b=getBlockDistance(temp);
         s="";
+        System.out.println(right_b);
         
-        while(data.charAt(cur)!=',')           //sensors in front
+        while(data.charAt(cur)!=','){           //sensors in front
             s=s+data.charAt(cur);
+            cur++;
+        }
         cur++;
         temp=Integer.parseInt(s);
         up_r=getBlockDistance(temp);
         s="";
+        System.out.println(up_r);
         
-        while(data.charAt(cur)!=',')
+        while(data.charAt(cur)!=','){
             s=s+data.charAt(cur);
+            cur++;
+        }
         cur++;
         temp=Integer.parseInt(s);
         up_m=getBlockDistance(temp);
         s="";
         
-        while(data.charAt(cur)!=',')
+        while(data.charAt(cur)!=','){
             s=s+data.charAt(cur);
+            cur++;
+        }
         cur++;
         temp=Integer.parseInt(s);
         up_l=getBlockDistance(temp);
         s="";
         
-        while(data.charAt(cur)!=',')                //right top sensor
+        while(data.charAt(cur)!=','){                //right top sensor
             s=s+data.charAt(cur);
+            cur++;
+        }
         cur++;
         temp=Integer.parseInt(s);
         right_t=getBlockDistance(temp);
         s="";
         
-        while(data.charAt(cur)!=',')                //left sensor
+        while(data.charAt(cur)!=','){                //left sensor
             s=s+data.charAt(cur);
+            cur++;
+        }
         cur++;
         temp=Integer.parseInt(s);
         left_t=getBlockDistance(temp);
         s="";
+        System.out.println(left_t);
         
         
     }
     public int getBlockDistance(int temp){
+    	if(temp==0)
+    		return 0;
         if(temp%5<5)
             return temp/10+1;
         else

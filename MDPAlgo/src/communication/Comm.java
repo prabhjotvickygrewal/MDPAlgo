@@ -50,18 +50,35 @@ public class Comm {
     }
     public static void sendToRobot(String string){
     	try{
-	        String st="AC"+string;
+	        String st="CA"+string;
 	        out.write(st,0,st.length());
 	        out.flush();
+	        st="BA"+string;
+	        out.write(st, 0, st.length());
     	}
         catch(IOException e){
         	e.printStackTrace();
         }
     }
     public static boolean checkActionCompleted(){
+//    	System.out.println("action executing");
     	try{
 	    	String s=in.readLine();
-	    	return (s=="-2");
+    		System.out.println("received");
+    		System.out.println(s);
+	    	return (s.equals("-2") || s.equals("-2\n"));
+    	}
+    	catch(IOException e){
+    		e.printStackTrace();
+    		return false;
+    	}
+    }
+    public static boolean checkCalibrationCompleted(){
+//    	System.out.println("calibrating");
+    	try{
+    		String s=in.readLine();
+    		System.out.println(s);
+    		return (s.equals("1") || s.equals("1\n"));
     	}
     	catch(IOException e){
     		e.printStackTrace();
@@ -69,9 +86,11 @@ public class Comm {
     	}
     }
     public static String receiveSensorData(){
+    	System.out.println("scanning");
     	try{
     		String s=in.readLine();
-    		if(s.length()>=11)
+    		System.out.println("recived");
+    		if(s.length()>=11)    			
     			return s;
     	}
     	catch(IOException e){
