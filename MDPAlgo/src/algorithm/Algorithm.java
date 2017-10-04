@@ -18,6 +18,7 @@ public class Algorithm {
     private static long currentTime;
     private static Comm comm;
     public static boolean isSimulating;
+    public static boolean androidEnabled=false;
     public Algorithm(Simulator simulator, boolean isSimulating){
         robot=new Robot();
         map=robot.getMap();
@@ -37,6 +38,9 @@ public class Algorithm {
             comm=new Comm();
     }
     public void explore(int timeLimit, int covLimit, GUI gui) {      //timeLimit in second
+    	if(androidEnabled)
+    		while(!Comm.checkAndroidMessage("exploration"));
+    	
     	startTime=System.currentTimeMillis();
     	timeLimit++;
         ShortestPath sp = new ShortestPath(map, robot);
@@ -107,7 +111,7 @@ public class Algorithm {
         mapLayer.processSensorData(s, robot);
 
 //        map.printMap();
-        Comm.sendToAndroid(String.format("%s%n%s", mapLayer.getFirstString(), mapLayer.getSecondString()));
+        Comm.sendToAndroid(String.format("%s%s%n%s%n", "map::",mapLayer.getFirstString(), mapLayer.getSecondString()));
         System.out.println("Send out string");
         gui.getGridPanel().getGridContainer().drawGrid(map, robot);
         System.out.println(robot.getPos() + "  " + robot.getOri());

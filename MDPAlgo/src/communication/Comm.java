@@ -11,8 +11,8 @@ import java.io.*;
  */
 public class Comm {
     private static Socket socket;
-    public static OutputStreamWriter out;
-    public static BufferedReader in;
+    private static OutputStreamWriter out;
+    private static BufferedReader in;
     
     public Comm(){
         try{
@@ -50,10 +50,10 @@ public class Comm {
     }
     public static void sendToRobot(String string){
     	try{
-	        String st="CA"+string;
+	        String st="AC"+string;
 	        out.write(st,0,st.length());
 	        out.flush();
-	        st="BA"+string;
+	        st="ABmove::"+string;
 	        out.write(st, 0, st.length());
     	}
         catch(IOException e){
@@ -64,6 +64,7 @@ public class Comm {
 //    	System.out.println("action executing");
     	try{
 	    	String s=in.readLine();
+	    	s=s.substring(2, s.length());
     		System.out.println("received");
     		System.out.println(s);
 	    	return (s.equals("-2") || s.equals("-2\n"));
@@ -77,6 +78,7 @@ public class Comm {
 //    	System.out.println("calibrating");
     	try{
     		String s=in.readLine();
+    		s=s.substring(2, s.length());
     		System.out.println(s);
     		return (s.equals("1") || s.equals("1\n"));
     	}
@@ -89,6 +91,7 @@ public class Comm {
     	System.out.println("scanning");
     	try{
     		String s=in.readLine();
+    		s=s.substring(2, s.length());
     		System.out.println("recived");
     		if(s.length()>=11)    			
     			return s;
@@ -98,5 +101,28 @@ public class Comm {
     	}
         return "0,0,0,0,0,0";
     }
-    
+    public static boolean checkAndroidMessage(String st){
+    	System.out.println("wait for android instruction "+st);
+    	try{
+    		String s=in.readLine();
+    		s=s.substring(2, s.length());
+    		System.out.println("received");
+    		return (s.equals(st) || s.equals(st+"\n"));
+    	}
+    	catch(IOException e){
+    		e.printStackTrace();
+    		return false;
+    	}
+    }
+    public static void checkAndroidMessage(){
+    	
+    }
+    public static void close(){
+    	try{
+    		socket.close();
+    	}
+    	catch(IOException e){
+    		e.printStackTrace();
+    	}
+    }
 }

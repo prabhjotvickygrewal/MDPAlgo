@@ -24,6 +24,7 @@ import java.awt.Color;
 import java.util.LinkedList;
 
 import robot.*;
+import communication.*;
 import map.*;
 
 public class GUI extends JFrame {
@@ -143,6 +144,7 @@ public class GUI extends JFrame {
 		btnExit.addMouseListener(new MouseAdapter(){
 			@Override
 			public void mouseClicked(MouseEvent arg0){
+				Comm.close();
 				System.exit(0);
 			}
 		});
