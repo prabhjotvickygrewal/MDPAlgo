@@ -130,10 +130,10 @@ public class MapLayer {
         return true;
     }
     public boolean checkExplorable(Vector v){
-    	 boolean isUpperBlocked=checkIsBlockFree(v.nAdd(new Vector(0,2)));
-    	 boolean isLowerBlocked=checkIsBlockFree(v.nAdd(new Vector(0,-2)));
-    	 boolean isRightBlocked=checkIsBlockFree(v.nAdd(new Vector(2,0)));
-    	 boolean isLeftBlocked=checkIsBlockFree(v.nAdd(new Vector(-2,0)));    	
+    	 boolean isUpperBlocked=!checkIsBlockFree(v.nAdd(new Vector(0,2)));
+    	 boolean isLowerBlocked=!checkIsBlockFree(v.nAdd(new Vector(0,-2)));
+    	 boolean isRightBlocked=!checkIsBlockFree(v.nAdd(new Vector(2,0)));
+    	 boolean isLeftBlocked=!checkIsBlockFree(v.nAdd(new Vector(-2,0)));    	
     	 return !(isUpperBlocked && isLowerBlocked && isRightBlocked && isLeftBlocked);
       }
     public boolean checkIsBlockFree(Vector v){

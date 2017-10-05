@@ -52,25 +52,28 @@ public class Algorithm {
             Calibration.calibrate(robot, mapLayer);
             followRightObstacle(gui);
         }while(!checkTimeLimitReached(timeLimit) && !checkCovLimitReached(covLimit) && !reachStartZone());
-        Vector goal;
-       
-        while(!checkTimeLimitReached(timeLimit) && ! checkCovLimitReached(covLimit) && !exploreComplete()){
-	        	
-        	goal = findNearestExploredPoint(getRemainedPoint().getFirst());
-	        
-        	if(goal == null) {
-	        	break;
-	        }	
-	        sp.executeShortestPath(goal.x, goal.y, gui);
-            do{
-                scan(gui);
-                Calibration.calibrate(robot, mapLayer);
-                System.out.println(robot.getPos() + "  " + robot.getOri());
-                followRightObstacle(gui);
-            }while(robot.getPos()!=goal);    //explore until get to the original position again
-            sp.executeShortestPath(1, 1, gui);
-        }
         
+        LinkedList<Vector> unknown;
+        LinkedList<Vector> unreachable=new LinkedList<Vector>();
+        do{
+	        	
+        	unknown = getRemainedPoint();
+        	if(unknown.size()==0)
+        		break;
+        	unknown.removeAll(unreachable);
+        	Vector goal=findNearestExploredPoint(unknown.getFirst());
+	        if(sp.executeShortestPath(goal.x, goal.y, gui)==null)
+	        	unreachable.add(unknown.getFirst());
+	        else {
+	            do{
+	                scan(gui);
+	                Calibration.calibrate(robot, mapLayer);
+	                System.out.println(robot.getPos() + "  " + robot.getOri());
+	                followRightObstacle(gui);
+	            }while(robot.getPos()!=goal);    //explore until get to the original position again
+	        }
+        }while(!checkTimeLimitReached(timeLimit) && ! checkCovLimitReached(covLimit) && !exploreComplete());
+        sp.executeShortestPath(1, 1, gui);
         System.out.println("exploration finished");
     }
     public void followRightObstacle(GUI gui){
@@ -174,34 +177,19 @@ public class Algorithm {
         return map;
     }
     private Vector findNearestExploredPoint(Vector p) {
-    	double distance;
-    	double min = 2;
-    	for(int i = 0 ; i < Map.MAX_X; i++)
-    		for (int j = 0 ; j < Map.MAX_Y; j++) {
-    			distance = Math.sqrt((p.x - i)*(p.x - i)+(p.y - j)*(p.y - j));
-    			if(distance < min && map.checkInsideBoundary(p) && map.checkIsFree(p)) {
-    				Vector v = new Vector(i,j);
-    				return v;
-    			}
-    		}
-    	double min2 = 3;
-    	for(int i = 0 ; i < Map.MAX_X; i++)
-    		for (int j = 0 ; j < Map.MAX_Y; j++) {
-    			distance = Math.sqrt((p.x - i)*(p.x - i)+(p.y - j)*(p.y - j));
-    			if(distance < min2 && map.checkInsideBoundary(p) && map.checkIsFree(p)) {
-    				Vector v = new Vector(i,j);
-    				return v;
-    			}
-    		}
-    	double min3 = 4;
-    	for(int i = 0 ; i < Map.MAX_X; i++)
-    		for (int j = 0 ; j < Map.MAX_Y; j++) {
-    			distance = Math.sqrt((p.x - i)*(p.x - i)+(p.y - j)*(p.y - j));
-    			if(distance < min3 && map.checkInsideBoundary(p) && map.checkIsFree(p)) {
-    				Vector v = new Vector(i,j);
-    				return v;
-    			}
-    		}
+    	Vector cur=p.nAdd(new Vector(0,2));
+    	if(mapLayer.checkIsBlockFree(cur))
+    		return cur;
+    	cur=p.nAdd(new Vector(2,0));
+    	if(mapLayer.checkIsBlockFree(cur))
+    		return cur;
+    	cur=p.nAdd(new Vector(0,-2));
+    	if(mapLayer.checkIsBlockFree(cur))
+    		return cur;
+    	cur=p.nAdd(new Vector(-2,0));
+    	if(mapLayer.checkIsBlockFree(cur))
+    		return cur;
     	return null;
+    	
     }
 }

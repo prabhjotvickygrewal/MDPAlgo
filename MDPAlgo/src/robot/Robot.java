@@ -62,8 +62,10 @@ public class Robot {
                 }
                 break;
         }
-        Comm.sendToAndroid("position:"+pos.x+":"+pos.y+"\n");
-        Comm.sendToAndroid("orientation:"+ori.ordinal()+"\n");
+        if(!Algorithm.isSimulating) {
+	        Comm.sendToAndroid("position:"+pos.x+":"+pos.y+"\n");
+	        Comm.sendToAndroid("orientation:"+ori.ordinal()+"\n");
+        }
     }
     public void executeBuffered(){
         for(RobotAction action: buffer)
@@ -79,6 +81,7 @@ public class Robot {
     public Direction getOri(){
         return ori;
     }
+    
     
 //    public boolean getSimulation() {
 //    	return isSimulating;
