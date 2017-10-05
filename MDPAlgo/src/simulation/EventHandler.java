@@ -4,6 +4,7 @@
  */
 package simulation;
 import algorithm.*;
+import communication.Comm;
 import robot.*;
 import map.*;
 import javax.swing.SwingWorker;
@@ -14,6 +15,7 @@ import javax.swing.SwingWorker;
  */
 public class EventHandler {
     private GUI gui;
+    private Algorithm algo;
     private SwingWorker explore;
     public EventHandler(GUI gui){
         this.gui=gui;
@@ -30,7 +32,7 @@ public class EventHandler {
     	else
     		covLimit=100;
         Simulator simulator=new Simulator(map);
-        final Algorithm algo=new Algorithm(simulator,r,isSimulating);
+        algo=new Algorithm(simulator,r,isSimulating);
         explore=new SwingWorker<Integer, Integer>(){
             @Override
             public Integer doInBackground(){
@@ -60,5 +62,10 @@ public class EventHandler {
     	if(fileName!=null){
     		Descriptor.writeFileFromStates(fileName, states);
     	}
+    }
+    public void exit(){
+    	if(!algo.isSimulating)
+    		Comm.close();
+    	System.exit(0);
     }
 }

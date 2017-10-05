@@ -144,8 +144,7 @@ public class GUI extends JFrame {
 		btnExit.addMouseListener(new MouseAdapter(){
 			@Override
 			public void mouseClicked(MouseEvent arg0){
-				Comm.close();
-				System.exit(0);
+				eventHandler.exit();
 			}
 		});
 		btnExit.setBounds(480, 68, 120, 23);

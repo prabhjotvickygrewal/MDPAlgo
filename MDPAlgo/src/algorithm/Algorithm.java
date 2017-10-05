@@ -19,14 +19,18 @@ public class Algorithm {
     private static Comm comm;
     public static boolean isSimulating;
     public static boolean androidEnabled=false;
+    public static Vector startPoint;
+    public static Vector endPoint;
+    public static LinkedList<Vector> path;
     public Algorithm(Simulator simulator, boolean isSimulating){
         robot=new Robot();
         map=robot.getMap();
         Algorithm.simulator=simulator;
         mapLayer=new MapLayer(robot.getMap());
         Algorithm.isSimulating=isSimulating;
-        if(comm==null)
+        if(comm==null && !isSimulating)
             comm =new Comm();
+        path=new LinkedList<Vector>();
     }
     public Algorithm(Simulator s, Robot r, boolean isSimulating){
         robot=r;
@@ -34,15 +38,16 @@ public class Algorithm {
         simulator=s;
         mapLayer=new MapLayer(map);
         Algorithm.isSimulating=isSimulating;
-        if(comm==null)
+        if(comm==null && !isSimulating)
             comm=new Comm();
+        path=new LinkedList<Vector>();
     }
     public void explore(int timeLimit, int covLimit, GUI gui) {      //timeLimit in second
     	if(androidEnabled)
     		while(!Comm.checkAndroidMessage("exploration"));
     	
     	startTime=System.currentTimeMillis();
-    	timeLimit++;
+    	covLimit++;
         ShortestPath sp = new ShortestPath(map, robot);
         do{
             scan(gui);
@@ -67,6 +72,8 @@ public class Algorithm {
             }while(robot.getPos()!=goal);    //explore until get to the original position again
             sp.executeShortestPath(1, 1, gui);
         }
+        
+        System.out.println("exploration finished");
     }
     public void followRightObstacle(GUI gui){
         if(isRightFree()){
@@ -111,7 +118,9 @@ public class Algorithm {
         mapLayer.processSensorData(s, robot);
 
 //        map.printMap();
-        Comm.sendToAndroid(String.format("%s%s%n%s%n", "map::",mapLayer.getFirstString(), mapLayer.getSecondString()));
+        if(!isSimulating){
+        	Comm.sendToAndroid(String.format("%s%s%n%s%n", "map::",mapLayer.getFirstString(), mapLayer.getSecondString()));
+        }
         System.out.println("Send out string");
         gui.getGridPanel().getGridContainer().drawGrid(map, robot);
         System.out.println(robot.getPos() + "  " + robot.getOri());

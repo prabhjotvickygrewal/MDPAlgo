@@ -5,6 +5,8 @@
 package communication;
 import java.net.*;
 import java.io.*;
+import algorithm.*;
+import map.*;
 /**
  *
  * @author kokc0009
@@ -107,6 +109,49 @@ public class Comm {
     		String s=in.readLine();
     		s=s.substring(2, s.length());
     		System.out.println("received");
+    		
+    		if(s.contains("startpoint")){
+    			int cur=11;
+    			String fragment="";
+    			while(s.charAt(cur)!=':'){
+    				fragment=fragment+s.charAt(cur);
+    				cur++;
+    			}
+    			cur++;
+    			int x=Integer.parseInt(fragment);
+    			
+    			fragment=s.substring(cur, s.length());
+    			int y=Integer.parseInt(fragment);
+    			Algorithm.startPoint=new Vector(x,y);    			
+    		}
+    		else if(s.contains("endpoint")){
+    			int cur=9;
+    			String fragment="";
+    			while(s.charAt(cur)!=':'){
+    				fragment=fragment+s.charAt(cur);
+    				cur++;
+    			}
+    			cur++;
+    			int x=Integer.parseInt(fragment);
+    			
+    			fragment=s.substring(cur, s.length());
+    			int y=Integer.parseInt(fragment);
+    			Algorithm.endPoint=new Vector(x,y);
+    		}
+    		else if(s.contains("waypoint")){
+    			int cur=9;
+    			String fragment="";
+    			while(s.charAt(cur)!=':'){
+    				fragment=fragment+s.charAt(cur);
+    				cur++;
+    			}
+    			cur++;
+    			int x=Integer.parseInt(fragment);
+    			
+    			fragment=s.substring(cur, s.length());
+    			int y=Integer.parseInt(fragment);
+    			Algorithm.path.add(new Vector(x,y));
+    		}
     		return (s.equals(st) || s.equals(st+"\n"));
     	}
     	catch(IOException e){
