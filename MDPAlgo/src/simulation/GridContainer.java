@@ -3,9 +3,10 @@ package simulation;
 import java.awt.*;
 
 import javax.swing.JPanel;
-
+import algorithm.*;
 import map.*;
 import robot.Robot;
+import robot.Direction;
 public class GridContainer extends JPanel{
 	public static final int BLOCK_SIZE=30;
 	public static final int GAP=1;
@@ -44,12 +45,14 @@ public class GridContainer extends JPanel{
 				case Unknown:
 					target=ColorConfig.UNKNOWN;
 				}
-				if(isStartZone(cur))
-					target=ColorConfig.START;
-				if(isGoalZone(cur))
-					target=ColorConfig.GOAL;
-				if(isRobot(cur, r))
+				if(isRobotHead(cur,r))
+					target=ColorConfig.ROBOT_HEAD;
+				else if(isRobot(cur, r))
 					target=ColorConfig.ROBOT_BODY;
+				else if(isStartZone(cur))
+					target=ColorConfig.START;
+				else if(isGoalZone(cur))
+					target=ColorConfig.GOAL;
 				grid[i][j].setBackground(target);
 				
 				if(isFirstTime)
@@ -69,17 +72,20 @@ public class GridContainer extends JPanel{
 					return true;
 		return false;
 	}
+	public boolean isRobotHead(Vector v, Robot r){
+		return v.equals(r.getPos().nAdd(r.getOri().toVector()));
+	}
 	public boolean isStartZone(Vector v){
-		for(int i=0;i<3;i++)
-			for(int j=0;j<3;j++)
-				if(v.equals(new Vector(i,j)))
+		for(int i=-1;i<2;i++)
+			for(int j=-1;j<2;j++)
+				if(v.equals(Algorithm.startPoint.nAdd(new Vector(i,j))))
 					return true;
 		return false;
 	}
 	public boolean isGoalZone(Vector v){
-		for(int i=0;i<3;i++)
-			for(int j=0;j<3;j++)
-				if(v.equals(new Vector(Map.MAX_X-i-1,Map.MAX_Y-j-1)))
+		for(int i=-1;i<2;i++)
+			for(int j=-1;j<2;j++)
+				if(v.equals(Algorithm.endPoint.nAdd(new Vector(i,j))))
 					return true;
 		return false;
 	}

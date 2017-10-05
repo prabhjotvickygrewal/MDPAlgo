@@ -7,6 +7,7 @@ import java.net.*;
 import java.io.*;
 import algorithm.*;
 import map.*;
+import simulation.GUI;
 /**
  *
  * @author kokc0009
@@ -130,7 +131,8 @@ public class Comm {
     			
     			fragment=s.substring(cur, s.length());
     			int y=Integer.parseInt(fragment);
-    			Algorithm.startPoint=new Vector(x,y);    			
+    			Algorithm.startPoint=new Vector(x,y);
+    			
     		}
     		else if(s.contains("endpoint")){
     			int cur=9;

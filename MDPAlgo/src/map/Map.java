@@ -97,13 +97,13 @@ public class Map {
     
     public boolean checkIsFree(Vector v){
         if(checkInsideBoundary(v))
-            if(getPointStateAt(v)==PointState.IsFree)
+            if(getPointStateAt(v)==PointState.IsFree || getPointStateAt(v)==PointState.VirtualWall)
                 return true;
         return false;
     }
     public boolean checkIsFree(Point p){
         if(checkInsideBoundary(p))
-            if(p.getState()==PointState.IsFree)
+            if(p.getState()==PointState.IsFree || p.getState()==PointState.VirtualWall)
                 return true;
         return false;
     } 

@@ -33,14 +33,15 @@ public class GUI extends JFrame {
 	private JTextField textField;
 	private JTextField timeLimitText;
 	private JTextField covLimitText;
+	private JTextField speedText;
 	private GridPanel gridPanel;
 	private Robot robot;
 	private Map realMap;
-        private Map robotMap;
+    private Map robotMap;
 	public static final int BLOCK_SIZE=30;
 	public static final int GAP=1;
-        private static EventHandler eventHandler;
-        public static boolean isExploring=false;
+    private static EventHandler eventHandler;
+    public static boolean explored=false;
 	/**
 	 * Launch the application.
 	 */
@@ -105,28 +106,28 @@ public class GUI extends JFrame {
         panel.add(gridPanel);
         
         JCheckBox isSimulation = new JCheckBox("Simulation");
-        isSimulation.setBounds(30, 68, 90, 23);
+        isSimulation.setBounds(25, 68, 90, 23);
         panel_1.add(isSimulation);
 
 		JButton btnStartExploring = new JButton("Start Exploring");
 		btnStartExploring.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-                            eventHandler.startExploration(robot, realMap,timeLimitText.getText(),covLimitText.getText(),isSimulation.isSelected());
-                            isExploring=true;
+				eventHandler.startExploration(
+						robot, realMap,timeLimitText.getText(),covLimitText.getText(),speedText.getText(), isSimulation.isSelected());
 			}
 		});
-		btnStartExploring.setBounds(120, 68, 120, 23);
+		btnStartExploring.setBounds(115, 68, 120, 23);
 		panel_1.add(btnStartExploring);
 		
 		JButton btnShortestPath = new JButton("Shortest Path");
 		btnShortestPath.addMouseListener(new MouseAdapter(){
 			@Override
 			public void mouseClicked(MouseEvent arg0){
-				eventHandler.shortestPath(robot);
+				eventHandler.shortestPath(robot, realMap, speedText.getText(), isSimulation.isSelected());
 			}
 		});
-		btnShortestPath.setBounds(240, 68, 120, 23);
+		btnShortestPath.setBounds(235, 68, 120, 23);
 		panel_1.add(btnShortestPath);
 		
 		JButton btnRestartRobot = new JButton("Restart Robot");
@@ -137,7 +138,7 @@ public class GUI extends JFrame {
                 gridPanel.getGridContainer().drawGrid(realMap, robot);
 			}
 		});
-		btnRestartRobot.setBounds(360, 68, 120, 23);
+		btnRestartRobot.setBounds(355, 68, 120, 23);
 		panel_1.add(btnRestartRobot);
 		
 		JButton btnExit = new JButton("Exit");
@@ -147,11 +148,11 @@ public class GUI extends JFrame {
 				eventHandler.exit();
 			}
 		});
-		btnExit.setBounds(480, 68, 120, 23);
+		btnExit.setBounds(475, 68, 120, 23);
 		panel_1.add(btnExit);
 		
 		textField = new JTextField();
-		textField.setBounds(50, 27, 120, 20);
+		textField.setBounds(25, 27, 120, 20);
 		panel_1.add(textField);
 		textField.setColumns(10);
 		
@@ -159,12 +160,11 @@ public class GUI extends JFrame {
         btnLoadMap.addMouseListener(new MouseAdapter(){
         	@Override
         	public void mouseClicked(MouseEvent arg0){
-        		isExploring=true;
                  realMap=eventHandler.loadMap(textField.getText(), realMap);
                  gridPanel.getGridContainer().drawGrid(realMap, robot);
             }
         });
-		btnLoadMap.setBounds(180, 26, 89, 23);
+		btnLoadMap.setBounds(150, 26, 90, 23);
 		panel_1.add(btnLoadMap);
 		
         JButton btnSaveMap = new JButton("Save Map");
@@ -175,26 +175,36 @@ public class GUI extends JFrame {
         		eventHandler.saveMap(textField.getText(), robotMap);
         	}
         });
-		btnSaveMap.setBounds(280, 26, 89, 23);
+		btnSaveMap.setBounds(245, 26, 90, 23);
 		panel_1.add(btnSaveMap);
                 
 		JLabel lblTimeLimit = new JLabel("Time Limit");
-		lblTimeLimit.setBounds(408, 11, 60, 14);
+		lblTimeLimit.setBounds(360, 11, 60, 14);
 		panel_1.add(lblTimeLimit);
 		
 		JLabel lblCoverageLimit = new JLabel("Coverage Limit");
-		lblCoverageLimit.setBounds(496, 11, 89, 14);
+		lblCoverageLimit.setBounds(440, 11, 90, 14);
 		panel_1.add(lblCoverageLimit);
 		
+		JLabel lblSpeed = new JLabel("Speed");
+		lblSpeed.setBounds(550, 11, 60, 14);
+		panel_1.add(lblSpeed);
+		
 		timeLimitText = new JTextField();
-		timeLimitText.setBounds(408, 27, 46, 20);
+		timeLimitText.setBounds(370, 27, 46, 20);
 		panel_1.add(timeLimitText);
 		timeLimitText.setColumns(10);
 		
 		covLimitText = new JTextField();
-		covLimitText.setBounds(506, 27, 46, 20);
+		covLimitText.setBounds(460, 27, 46, 20);
 		panel_1.add(covLimitText);
 		covLimitText.setColumns(10);
+		
+		speedText = new JTextField();
+		speedText.setBounds(550, 27, 46, 20);
+		panel_1.add(speedText);
+		speedText.setColumns(10);
+		
 	}
         
         public GridPanel getGridPanel(){

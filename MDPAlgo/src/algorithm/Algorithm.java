@@ -19,8 +19,8 @@ public class Algorithm {
     private static Comm comm;
     public static boolean isSimulating;
     public static boolean androidEnabled=false;
-    public static Vector startPoint;
-    public static Vector endPoint;
+    public static Vector startPoint=new Vector(1,1);
+    public static Vector endPoint=new Vector(18,13);
     public static Vector wayPoint;
     public Algorithm(Simulator simulator, boolean isSimulating){
         robot=new Robot();
@@ -41,17 +41,21 @@ public class Algorithm {
             comm=new Comm();
     }
     public void explore(int timeLimit, int covLimit, GUI gui) {      //timeLimit in second
-    	if(androidEnabled)
-    		while(!Comm.checkAndroidMessage("exploration"));
-    	
+    	if(androidEnabled){
+    		while(!Comm.checkAndroidMessage("exploration")){
+    			robot.setPos(new Vector(Algorithm.startPoint.x,Algorithm.startPoint.y));
+    			gui.getGridPanel().getGridContainer().drawGrid(map, robot);
+    		}
+    	}
     	startTime=System.currentTimeMillis();
     	covLimit++;
-        ShortestPath sp = new ShortestPath(map, robot);
+        ShortestPath sp = new ShortestPath(map, robot, true);
         do{
             scan(gui);
             Calibration.calibrate(robot, mapLayer);
             followRightObstacle(gui);
         }while(!checkTimeLimitReached(timeLimit) && !checkCovLimitReached(covLimit) && !reachStartZone());
+        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
         
         LinkedList<Vector> unknown;
         LinkedList<Vector> unreachable=new LinkedList<Vector>();
@@ -70,7 +74,7 @@ public class Algorithm {
 	                Calibration.calibrate(robot, mapLayer);
 	                System.out.println(robot.getPos() + "  " + robot.getOri());
 	                followRightObstacle(gui);
-	            }while(robot.getPos()!=goal);    //explore until get to the original position again
+	            }while(robot.getPos().equals(goal));    //explore until get to the original position again
 	        }
         }while(!checkTimeLimitReached(timeLimit) && ! checkCovLimitReached(covLimit) && !exploreComplete());
         sp.executeShortestPath(1, 1, gui);
@@ -80,13 +84,13 @@ public class Algorithm {
         if(isRightFree()){
             robot.bufferAction(RobotAction.Right);
             robot.bufferAction(RobotAction.Forward);
-            robot.executeBuffered();
+            robot.executeBuffered(true);
 //            System.out.println(robot.getPos() + "  " + robot.getOri());
         }
         else{
             while(!isUpFree()){
                 robot.bufferAction(RobotAction.Left);
-                robot.executeBuffered();
+                robot.executeBuffered(true);
                 scan(gui);
 //                map.printMap();
 //                System.out.println(robot.getPos() + "  " + robot.getOri());
@@ -94,22 +98,21 @@ public class Algorithm {
             }
         //    System.out.println(robot.getPos() + "  " + robot.getOri());
             robot.bufferAction(RobotAction.Forward);
-            robot.executeBuffered();
+            robot.executeBuffered(true);
 //            System.out.println("\n");
            
 
         }
     }
-    public void scan(GUI gui){
+    public static void scan(GUI gui){
     	SensorData s;
-    	
     	if(isSimulating){
 	        s=simulator.getSensorData(robot);
-	        try {
-	            Thread.sleep(400);                 //1000 milliseconds is one second.
-	        } catch(InterruptedException ex) {
-	            Thread.currentThread().interrupt();
-	        }
+//	        try {
+//	            Thread.sleep(400);                 //1000 milliseconds is one second.
+//	        } catch(InterruptedException ex) {
+//	            Thread.currentThread().interrupt();
+//	        }
     	}
     	else{
     		Comm.sendToRobot("4\n");

@@ -7,6 +7,7 @@ import simulation.*;
 import map.Map;
 import map.Point;
 import map.PointState;
+import map.Vector;
 import robot.Direction;
 import robot.Robot;
 import robot.RobotAction;
@@ -23,13 +24,13 @@ public class ShortestPath {
 	private Map map;					//explored map
 //	private Map actualMap = null;		//From simulator
 	private int loopCount;
-	private boolean explorationMode;
-	private MapLayer mapLayer;
+	private boolean explorationMode=true;
+//	private MapLayer mapLayer;
 	private SensorData sensorData;
 	
-	public ShortestPath(Map map, Robot robot) {
+	public ShortestPath(Map map, Robot robot, boolean explorationMode) {
 //		this.actualMap = null;
-		initObject(map,robot);
+		initObject(map,robot, explorationMode);
 	}
 //	public ShortestPath(Map map, Robot robot, Map actualMap) {
 //		this.actualMap = actualMap;
@@ -37,7 +38,8 @@ public class ShortestPath {
 //		initObject(map, robot);
 //	}
 	
-	public void initObject(Map map, Robot robot) {
+	public void initObject(Map map, Robot robot, boolean explorationMode) {
+		this.explorationMode=explorationMode;
 		this.robot = robot;
 		this.map = map;
 		this.open = new ArrayList<>();
@@ -235,37 +237,30 @@ public class ShortestPath {
 	//Returns movements for shortestpath
 	private String shortestPathMovements(Stack<Point> path, int goalX, int goalY, GUI gui) {
 		StringBuilder movementString = new StringBuilder();
-		
-		
+		Robot virtualR=new Robot(robot.getMap(),robot.getOri(),robot.getPos());
 		Point p = path.pop();
 		Direction targetDir;
 		ArrayList<RobotAction> movement = new ArrayList<>();
 		//Speed?
 		
-		while((robot.getPos().x != goalX) || (robot.getPos().y != goalY)) {
-			if(robot.getPos().x == p.getPos().x && robot.getPos().y == p.getPos().y) {
+		while((virtualR.getPos().x != goalX) || (virtualR.getPos().y != goalY)) {
+			if(virtualR.getPos().x == p.getPos().x && virtualR.getPos().y == p.getPos().y) {
 				p = path.pop();
 			}
 			
-			targetDir = getTargetDir(robot.getPos().x,robot.getPos().y,robot.getOri(),p);
+			targetDir = getTargetDir(virtualR.getPos().x,virtualR.getPos().y,virtualR.getOri(),p);
 			
 			RobotAction ra;
 			
-			if(robot.getOri() != targetDir) {
-				ra = getTargetMove(robot.getOri(), targetDir); 
+			if(virtualR.getOri() != targetDir) {
+				ra = getTargetMove(virtualR.getOri(), targetDir); 
 			}
 			else {
 				ra = RobotAction.Forward;
 			}
-			try {
-				Thread.sleep(400);                 //1000 milliseconds is one second.
-                        }
-			catch(InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
-			System.out.println("Move " + ra.name() + " from (" + robot.getPos().x +", " + robot.getPos().y + ")");
-			robot.execute(ra);
-			gui.getGridPanel().getGridContainer().drawGrid(map, robot);
+			System.out.println("Move " + ra.name() + " from (" + virtualR.getPos().x +", " + virtualR.getPos().y + ")");
+			virtualR.execute(ra,false);
+//			gui.getGridPanel().getGridContainer().drawGrid(map, robot);
 //			for(int i = 0; i< Map.MAX_X; i++) {
 //				for (int j = 0; j < Map.MAX_Y; j++) {
 //					System.out.println("(" + i + ", " + j + ")" + " - " + gCosts[i][j]);
@@ -278,48 +273,46 @@ public class ShortestPath {
 		if(Algorithm.isSimulating || explorationMode) {
 			for (RobotAction mm : movement) {
 				if(mm == RobotAction.Forward) {
-					if(!canMoveForward()) {
+					if(!isUpFree()) {
 						System.out.println("Early termination of shortest path execution.");
 						return "T";
 					}
 				}
 				
-				robot.execute(mm);
-		        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
-
-				
+				robot.execute(mm,true);
 				//During exploration, use sensor data to update map
 				if(explorationMode) {
-					mapLayer.processSensorData(sensorData, robot);
+			        Algorithm.scan(gui);
+				}
+				else{
 			        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
 				}
 			}
-		}else {
+		}
+		else {
 			int fCount = 0;
 			for (RobotAction mm : movement) {
 				if(mm == RobotAction.Forward) {
 					fCount++;
-					if(fCount == 10) {
+//					if(fCount == 10) {
 //						robot.moveForwardMultiple(fCount);
-						fCount = 0;
+//						fCount = 0;
 //				        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
-						}
-					}else if (mm == RobotAction.Left || mm == RobotAction.Right) {
+//					}
+				}
+				else if (mm == RobotAction.Left || mm == RobotAction.Right) {
 						if(fCount > 0) {
-//							robot.moveForwardMultiple(fCount);
+							robot.moveForwardMultiple(fCount);
 							fCount = 0;
-//					        gui.getGridPanel().getGridContainer().drawGrid(actualMap, r);
-						}
-						
-						robot.execute(mm);
+					        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
+						}						
+						robot.execute(mm, true);
 				        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
-
-						//update map
 					}
 				}
 			if(fCount > 0) {
-//				robot.moveForwardMultiple(fCount);
-				//Update map
+				robot.moveForwardMultiple(fCount);
+		        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
 			}
 		}
 		System.out.println("\nMovements: " + movementString.toString());
@@ -327,36 +320,47 @@ public class ShortestPath {
 	}
 	
 	//Returns true if robot can move one point forward in current orientation
-	private boolean canMoveForward() {
-		int x = robot.getPos().x;
-		int y = robot.getPos().y;
-		
-		switch(robot.getOri()) {
-		case North:
-			if(map.checkIsFree(map.getPointMap(x-1, y+2)) && map.checkIsFree(map.getPointMap(x, y+2)) && map.checkIsFree(map.getPointMap(x+1, y+2))) {
-				return true;
-			}
-			break;
-		case East:
-			if(map.checkIsFree(map.getPointMap(x+2, y-1)) && map.checkIsFree(map.getPointMap(x+2, y)) && map.checkIsFree(map.getPointMap(x+2, y+1))) {
-				return true;
-			}
-			break;
-		case South:
-			if(map.checkIsFree(map.getPointMap(x-1, y-2)) && map.checkIsFree(map.getPointMap(x, y-2)) && map.checkIsFree(map.getPointMap(x+1, y-2))) {
-				return true;
-			}
-			break;
-		case West:
-			if(map.checkIsFree(map.getPointMap(x-2, y-1)) && map.checkIsFree(map.getPointMap(x-2, y)) && map.checkIsFree(map.getPointMap(x-2, y+1))) {
-				return true;
-			}
-			break;				
-		}
-		return false;
-	}
-	
-	
+//	private boolean canMoveForward() {
+//		int x = robot.getPos().x;
+//		int y = robot.getPos().y;
+//		
+//		switch(robot.getOri()) {
+//		case North:
+//			if(map.checkIsFree(map.getPointMap(x-1, y+2)) && map.checkIsFree(map.getPointMap(x, y+2)) && map.checkIsFree(map.getPointMap(x+1, y+2))) {
+//				return true;
+//			}
+//			break;
+//		case East:
+//			if(map.checkIsFree(map.getPointMap(x+2, y-1)) && map.checkIsFree(map.getPointMap(x+2, y)) && map.checkIsFree(map.getPointMap(x+2, y+1))) {
+//				return true;
+//			}
+//			break;
+//		case South:
+//			if(map.checkIsFree(map.getPointMap(x-1, y-2)) && map.checkIsFree(map.getPointMap(x, y-2)) && map.checkIsFree(map.getPointMap(x+1, y-2))) {
+//				return true;
+//			}
+//			break;
+//		case West:
+//			if(map.checkIsFree(map.getPointMap(x-2, y-1)) && map.checkIsFree(map.getPointMap(x-2, y)) && map.checkIsFree(map.getPointMap(x-2, y+1))) {
+//				return true;
+//			}
+//			break;				
+//		}
+//		return false;
+//	}
+//	
+    public boolean isUpFree(){
+        Vector rightVector=robot.getOri().getRight().toVector();
+        Vector upVector=robot.getOri().toVector();
+        Vector leftVector=robot.getOri().getLeft().toVector();
+        boolean up_l=map.checkIsFree(robot.getPos().nAdd(upVector.nMultiply(2)).nAdd(leftVector));
+        boolean up_m=map.checkIsFree(robot.getPos().nAdd(upVector.nMultiply(2)));
+        boolean up_r=map.checkIsFree(robot.getPos().nAdd(upVector.nMultiply(2)).nAdd(rightVector));
+        if(up_l && up_m && up_r)                    //check whether can move forward
+            return true;
+        else
+            return false;
+    }
 	//Returns the movements to execute to get from one direction to another
 	private RobotAction getTargetMove(Direction a, Direction b) {
 		switch(a) {

@@ -13,6 +13,8 @@ import java.util.LinkedList;
  * @author user
  */
 public class Robot {
+	public static final int MAX_STEP=6;
+	public static int delay=300;
     private Map map;
     private Direction ori;
     private Vector pos;
@@ -21,13 +23,19 @@ public class Robot {
     public Robot(){
         map=new Map();
         ori=Direction.East;
-        pos=new Vector(1,1);
+        pos=new Vector(Algorithm.startPoint.x,Algorithm.startPoint.y);
         buffer=new LinkedList<RobotAction>();
+    }
+    public Robot(Map map, Direction ori,Vector pos){
+    	this.map=map;
+    	this.ori=ori;
+    	this.pos=new Vector(pos.x,pos.y);
+    	buffer=new LinkedList<RobotAction>();
     }
     public void bufferAction(RobotAction action){
         buffer.add(action);
     }
-    public void execute(RobotAction action){
+    public void execute(RobotAction action, boolean canDelay){
         switch(action){
             case Forward:
                 pos.add(ori.toVector());
@@ -66,10 +74,19 @@ public class Robot {
 	        Comm.sendToAndroid("position:"+pos.x+":"+pos.y+"\n");
 	        Comm.sendToAndroid("orientation:"+ori.ordinal()+"\n");
         }
+        else{
+        	if(canDelay){
+	        	try {
+		            Thread.sleep(delay);                 //1000 milliseconds is one second.
+		        } catch(InterruptedException ex) {
+		            Thread.currentThread().interrupt();
+		        }
+        	}
+        }
     }
-    public void executeBuffered(){
+    public void executeBuffered(boolean canDelay){
         for(RobotAction action: buffer)
-            execute(action);
+            execute(action, canDelay);
         buffer.clear();
     }
     public Map getMap(){
@@ -77,6 +94,9 @@ public class Robot {
     }
     public Vector getPos(){
         return pos;
+    }
+    public void setPos(Vector v){
+    	this.pos=v;
     }
     public Direction getOri(){
         return ori;
@@ -87,34 +107,29 @@ public class Robot {
 //    	return isSimulating;
 //    }
     public void restart(){
-    	if(Algorithm.isSimulating){
     		ori=Direction.East;
-    		pos=new Vector(1,1);
-    		map=new Map();
-    	}
-    	else
-    		;//shortest path added here?
-    		
+    		pos=new Vector(Algorithm.startPoint.x,Algorithm.startPoint.y);
+    		map=new Map();    		
     }
     
     public void moveForwardMultiple(int n){
     	if(n==1)
-    		execute(RobotAction.Forward);
-    	while(n>6){
-    		pos.add(ori.toVector().nMultiply(6));
+    		execute(RobotAction.Forward, true);
+    	while(n>MAX_STEP){
+    		pos.add(ori.toVector().nMultiply(MAX_STEP));
     		if(!Algorithm.isSimulating){
-    			Comm.sendToRobot("1,6");
+    			Comm.sendToRobot("1,"+MAX_STEP);
     			while(!Comm.checkActionCompleted());
     		}
-    		n-=6;
+    		n-=MAX_STEP;
     	}
-    	
-    	pos.add(ori.toVector().nMultiply(n));
-    	if(!Algorithm.isSimulating){
-    		Comm.sendToRobot("1,"+n);
-    		while(!Comm.checkActionCompleted());
+    	if(n!=0){
+	    	pos.add(ori.toVector().nMultiply(n));
+	    	if(!Algorithm.isSimulating){
+	    		Comm.sendToRobot("1,"+n);
+	    		while(!Comm.checkActionCompleted());
+	    	}
     	}
-    	
         Comm.sendToAndroid("position::"+pos.x+";;"+pos.y);
         Comm.sendToAndroid("orientation::"+ori.ordinal());
     }

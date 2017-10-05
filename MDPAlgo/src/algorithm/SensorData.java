@@ -78,7 +78,10 @@ public class SensorData {
         }
         cur++;
         temp=Integer.parseInt(s);
-        left_t=getBlockDistance(temp);
+        if(temp>0 && temp<9)
+        	left_t=1;
+        else
+        	left_t=getBlockDistance(temp);
         s="";
         System.out.println(left_t);
         
