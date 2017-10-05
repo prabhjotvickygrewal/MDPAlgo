@@ -32,7 +32,7 @@ public class Robot {
             case Forward:
                 pos.add(ori.toVector());
                 if(!Algorithm.isSimulating){
-                    Comm.sendToRobot("1,1\n");
+                    Comm.sendToRobot("1,1");
                     while(!Comm.checkActionCompleted());
                 }
                 Calibration.addMoveCount();
@@ -40,9 +40,9 @@ public class Robot {
             case Backward:
                 pos.add(ori.getDown().toVector());
                 if(!Algorithm.isSimulating){
-                    Comm.sendToRobot("2,180,1\n");
+                    Comm.sendToRobot("2,180,1");
                     while(!Comm.checkActionCompleted());
-                    Comm.sendToRobot("1,1\n");
+                    Comm.sendToRobot("1,1");
                     while(!Comm.checkActionCompleted());
                 }
                 Calibration.addMoveCount();
@@ -50,18 +50,20 @@ public class Robot {
             case Right:
                 ori=ori.getRight();
                 if(!Algorithm.isSimulating){
-                    Comm.sendToRobot("2,90,1\n");
+                    Comm.sendToRobot("2,90,1");
                     while(!Comm.checkActionCompleted());
                 }
                 break;
             case Left:
                 ori=ori.getLeft();
                 if(!Algorithm.isSimulating){
-                    Comm.sendToRobot("2,90,0\n");
+                    Comm.sendToRobot("2,90,0");
                     while(!Comm.checkActionCompleted());
                 }
                 break;
         }
+        Comm.sendToAndroid("position:"+pos.x+":"+pos.y+"\n");
+        Comm.sendToAndroid("orientation:"+ori.ordinal()+"\n");
     }
     public void executeBuffered(){
         for(RobotAction action: buffer)
@@ -92,32 +94,25 @@ public class Robot {
     		
     }
     
-//    public void moveForwardMultiple(int count) {
-//    	if(count == 1) {
-//    		execute(RobotAction.Forward);
-//    	}
-//    	else {
-//    		Communication comm = Communication.getCommMgr();
-//    		if(count == 10) {
-//    			comm.sendMsg("0", Communication.INSTRUCTIONS);
-//    		}
-//    		else if(count < 10) {
-//    			comm.sendMsg(Integer.toString(count), Communication.INSTRUCTIONS);
-//    		}
-//    		
-//    		switch(ori) {
-//    		case North:
-//    			pos.x += count;
-//    			break;
-//    		case East:
-//    			pos.y += count;
-//    		case South:
-//    			pos.x += count;
-//    		case West:
-//    			pos.y += count;
-//    			break;
-//    		}
-//    		comm.sendMsg(this.getPos().x + ", " + this.getPos().y + ", " + this.getOri(), Communication.BOT_POS);
-//    	}
-//    }
+    public void moveForwardMultiple(int n){
+    	if(n==1)
+    		execute(RobotAction.Forward);
+    	while(n>6){
+    		pos.add(ori.toVector().nMultiply(6));
+    		if(!Algorithm.isSimulating){
+    			Comm.sendToRobot("1,6");
+    			while(!Comm.checkActionCompleted());
+    		}
+    		n-=6;
+    	}
+    	
+    	pos.add(ori.toVector().nMultiply(n));
+    	if(!Algorithm.isSimulating){
+    		Comm.sendToRobot("1,"+n);
+    		while(!Comm.checkActionCompleted());
+    	}
+    	
+        Comm.sendToAndroid("position::"+pos.x+";;"+pos.y);
+        Comm.sendToAndroid("orientation::"+ori.ordinal());
+    }
 }

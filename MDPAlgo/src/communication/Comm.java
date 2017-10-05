@@ -51,12 +51,19 @@ public class Comm {
         }
     }
     public static void sendToRobot(String string){
+    	
+    	try {
+            Thread.sleep(100);                 //1000 milliseconds is one second.
+        } catch(InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
     	try{
 	        String st="AC"+string;
 	        out.write(st,0,st.length());
 	        out.flush();
-	        st="ABmove::"+string;
-	        out.write(st, 0, st.length());
+//	        st="ABmove::"+string;
+//	        out.write(st, 0, st.length());
+//	        out.flush();
     	}
         catch(IOException e){
         	e.printStackTrace();
@@ -66,10 +73,11 @@ public class Comm {
 //    	System.out.println("action executing");
     	try{
 	    	String s=in.readLine();
+	    	System.out.println(s);
 	    	s=s.substring(2, s.length());
     		System.out.println("received");
     		System.out.println(s);
-	    	return (s.equals("-2") || s.equals("-2\n"));
+	    	return (s.equals("-2") || s.equals("-2\n") || s.equals("-2\r\n"));
     	}
     	catch(IOException e){
     		e.printStackTrace();
@@ -150,7 +158,7 @@ public class Comm {
     			
     			fragment=s.substring(cur, s.length());
     			int y=Integer.parseInt(fragment);
-    			Algorithm.path.add(new Vector(x,y));
+    			Algorithm.wayPoint= new Vector(x,y);
     		}
     		return (s.equals(st) || s.equals(st+"\n"));
     	}
@@ -159,9 +167,7 @@ public class Comm {
     		return false;
     	}
     }
-    public static void checkAndroidMessage(){
-    	
-    }
+
     public static void close(){
     	try{
     		socket.close();

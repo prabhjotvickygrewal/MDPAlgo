@@ -52,14 +52,14 @@ public class GridContainer extends JPanel{
 					target=ColorConfig.ROBOT_BODY;
 				grid[i][j].setBackground(target);
 				
-//				if(isFirstTime)
-//					this.add(grid[i][j]);
-			}
-		if(isFirstTime){
-			for(int j=Map.MAX_Y-1;j>=0;j--)
-				for(int i=0;i<Map.MAX_X;i++)
+				if(isFirstTime)
 					this.add(grid[i][j]);
-		}
+			}
+//		if(isFirstTime){
+//			for(int j=Map.MAX_Y-1;j>=0;j--)
+//				for(int i=0;i<Map.MAX_X;i++)
+//					this.add(grid[i][j]);
+//		}
 	}
 	public boolean isRobot(Vector v, Robot r){
 		Vector pos=r.getPos();

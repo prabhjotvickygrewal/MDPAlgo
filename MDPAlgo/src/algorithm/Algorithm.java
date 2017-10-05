@@ -21,7 +21,7 @@ public class Algorithm {
     public static boolean androidEnabled=false;
     public static Vector startPoint;
     public static Vector endPoint;
-    public static LinkedList<Vector> path;
+    public static Vector wayPoint;
     public Algorithm(Simulator simulator, boolean isSimulating){
         robot=new Robot();
         map=robot.getMap();
@@ -30,7 +30,6 @@ public class Algorithm {
         Algorithm.isSimulating=isSimulating;
         if(comm==null && !isSimulating)
             comm =new Comm();
-        path=new LinkedList<Vector>();
     }
     public Algorithm(Simulator s, Robot r, boolean isSimulating){
         robot=r;
@@ -40,7 +39,6 @@ public class Algorithm {
         Algorithm.isSimulating=isSimulating;
         if(comm==null && !isSimulating)
             comm=new Comm();
-        path=new LinkedList<Vector>();
     }
     public void explore(int timeLimit, int covLimit, GUI gui) {      //timeLimit in second
     	if(androidEnabled)
@@ -87,8 +85,8 @@ public class Algorithm {
                 robot.bufferAction(RobotAction.Left);
                 robot.executeBuffered();
                 scan(gui);
-                map.printMap();
-                System.out.println(robot.getPos() + "  " + robot.getOri());
+//                map.printMap();
+//                System.out.println(robot.getPos() + "  " + robot.getOri());
 
             }
         //    System.out.println(robot.getPos() + "  " + robot.getOri());
@@ -119,11 +117,11 @@ public class Algorithm {
 
 //        map.printMap();
         if(!isSimulating){
-        	Comm.sendToAndroid(String.format("%s%s%n%s%n", "map::",mapLayer.getFirstString(), mapLayer.getSecondString()));
+        	Comm.sendToAndroid("map::"+mapLayer.getFirstString()+";;"+mapLayer.getSecondString());
         }
-        System.out.println("Send out string");
+//        System.out.println("Send out string");
         gui.getGridPanel().getGridContainer().drawGrid(map, robot);
-        System.out.println(robot.getPos() + "  " + robot.getOri());
+//        System.out.println(robot.getPos() + "  " + robot.getOri());
         
     }
     public LinkedList<Vector> getRemainedPoint(){
