@@ -19,9 +19,6 @@ public class Algorithm {
     private static Comm comm;
     public static boolean isSimulating;
     public static boolean androidEnabled=false;
-    public static Vector startPoint;
-    public static Vector endPoint;
-    public static Vector wayPoint;
     public Algorithm(Simulator simulator, boolean isSimulating){
         robot=new Robot();
         map=robot.getMap();
@@ -45,7 +42,7 @@ public class Algorithm {
     		while(!Comm.checkAndroidMessage("exploration"));
     	
     	startTime=System.currentTimeMillis();
-    	covLimit++;
+    	timeLimit++;
         ShortestPath sp = new ShortestPath(map, robot);
         do{
             scan(gui);
@@ -53,25 +50,22 @@ public class Algorithm {
             followRightObstacle(gui);
         }while(!checkTimeLimitReached(timeLimit) && !checkCovLimitReached(covLimit) && !reachStartZone());
         Vector goal;
-       
-        while(!checkTimeLimitReached(timeLimit) && ! checkCovLimitReached(covLimit) && !exploreComplete()){
-	        	
-        	goal = findNearestExploredPoint(getRemainedPoint().getFirst());
-	        
-        	if(goal == null) {
-	        	break;
-	        }	
-	        sp.executeShortestPath(goal.x, goal.y, gui);
-            do{
-                scan(gui);
-                Calibration.calibrate(robot, mapLayer);
-                System.out.println(robot.getPos() + "  " + robot.getOri());
-                followRightObstacle(gui);
-            }while(robot.getPos()!=goal);    //explore until get to the original position again
-            sp.executeShortestPath(1, 1, gui);
-        }
-        
-        System.out.println("exploration finished");
+//        while(!checkTimeLimitReached(timeLimit) && ! checkCovLimitReached(covLimit) && !exploreComplete()){
+//	        	
+//        	goal = findNearestExploredPoint(getRemainedPoint().getFirst());
+//	        
+//        	if(goal == null) {
+//	        	break;
+//	        }	
+////	        sp.executeShortestPath(goal.x, goal.y, gui);
+//            do{
+//                scan(gui);
+//                Calibration.calibrate(robot, mapLayer);
+//                System.out.println(robot.getPos() + "  " + robot.getOri());
+//                followRightObstacle(gui);
+//            }while(robot.getPos()!=goal);    //explore until get to the original position again
+////            sp.executeShortestPath(1, 1, gui);
+//        }
     }
     public void followRightObstacle(GUI gui){
         if(isRightFree()){
@@ -85,8 +79,8 @@ public class Algorithm {
                 robot.bufferAction(RobotAction.Left);
                 robot.executeBuffered();
                 scan(gui);
-//                map.printMap();
-//                System.out.println(robot.getPos() + "  " + robot.getOri());
+                map.printMap();
+                System.out.println(robot.getPos() + "  " + robot.getOri());
 
             }
         //    System.out.println(robot.getPos() + "  " + robot.getOri());
@@ -114,14 +108,14 @@ public class Algorithm {
     	}
     	
         mapLayer.processSensorData(s, robot);
+        
 
 //        map.printMap();
-        if(!isSimulating){
-        	Comm.sendToAndroid("map::"+mapLayer.getFirstString()+";;"+mapLayer.getSecondString());
-        }
-//        System.out.println("Send out string");
+        if(!isSimulating)
+        	Comm.sendToAndroid(String.format("%s%s%n%s%n", "map::",mapLayer.getFirstString(), mapLayer.getSecondString()));
+        System.out.println("Send out string");
         gui.getGridPanel().getGridContainer().drawGrid(map, robot);
-//        System.out.println(robot.getPos() + "  " + robot.getOri());
+        System.out.println(robot.getPos() + "  " + robot.getOri());
         
     }
     public LinkedList<Vector> getRemainedPoint(){

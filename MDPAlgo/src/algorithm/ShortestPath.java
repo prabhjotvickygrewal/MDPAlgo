@@ -20,23 +20,22 @@ public class ShortestPath {
 	private Direction currentDir;
 	private double[][] gCosts;
 	private Robot robot;
-	private Map map;
-	private Map actualMap = null;
+	private Map map;					//explored map
+//	private Map actualMap = null;		//From simulator
 	private int loopCount;
 	private boolean explorationMode;
 	private MapLayer mapLayer;
 	private SensorData sensorData;
 	
 	public ShortestPath(Map map, Robot robot) {
-		this.actualMap = null;
+//		this.actualMap = null;
 		initObject(map,robot);
 	}
-	
-	public ShortestPath(Map map, Robot robot, Map actualMap) {
-		this.actualMap = actualMap;
-		this.explorationMode = false;
-		initObject(map, robot);
-	}
+//	public ShortestPath(Map map, Robot robot, Map actualMap) {
+//		this.actualMap = actualMap;
+//		this.explorationMode = false;
+//		initObject(map, robot);
+//	}
 	
 	public void initObject(Map map, Robot robot) {
 		this.robot = robot;
@@ -48,6 +47,8 @@ public class ShortestPath {
 		this.currentPoint =  map.getPointMap(robot.getPos().x, robot.getPos().y);
 		this.currentDir = robot.getOri();
 		this.gCosts = new double[Map.MAX_X][Map.MAX_Y];
+		
+		map.updateVirtualWall();
 		
 		for (int i = 0; i < Map.MAX_X; i++) {
 			for (int j= 0; j < Map.MAX_Y; j++) {
@@ -164,7 +165,7 @@ public class ShortestPath {
 				System.out.println("Reached goal!");
 				path = getPath(goalX, goalY);
 				printShortestPath(path);
-				return shortestPathMovements(path, goalX, goalY, gui);
+				return shortestPathMovements(robot,path, goalX, goalY, gui);
 			}
 			
 			//Setup neighbours of current cell
@@ -232,13 +233,13 @@ public class ShortestPath {
 	
 	
 	//Returns movements for shortestpath
-	private String shortestPathMovements(Stack<Point> path, int goalX, int goalY, GUI gui) {
+	private String shortestPathMovements(Robot r, Stack<Point> path, int goalX, int goalY, GUI gui) {
 		StringBuilder movementString = new StringBuilder();
+		
 		
 		Point p = path.pop();
 		Direction targetDir;
 		ArrayList<RobotAction> movement = new ArrayList<>();
-		Robot r = new Robot(true);
 		//Speed?
 		
 		while((r.getPos().x != goalX) || (r.getPos().y != goalY)) {
@@ -262,13 +263,18 @@ public class ShortestPath {
                             Thread.currentThread().interrupt();
                         }
 			System.out.println("Move " + ra.name() + " from (" + r.getPos().x +", " + r.getPos().y + ")");
-                        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
 			r.execute(ra);
+			gui.getGridPanel().getGridContainer().drawGrid(map, r);
+//			for(int i = 0; i< Map.MAX_X; i++) {
+//				for (int j = 0; j < Map.MAX_Y; j++) {
+//					System.out.println("(" + i + ", " + j + ")" + " - " + gCosts[i][j]);
+//				}
+//			}
 			movement.add(ra);
 			movementString.append(ra.name());
 		}
 		
-		if(robot.getSimulation() || explorationMode) {
+		if(Algorithm.isSimulating || explorationMode) {
 			for (RobotAction mm : movement) {
 				if(mm == RobotAction.Forward) {
 					if(!canMoveForward()) {
@@ -278,12 +284,14 @@ public class ShortestPath {
 				}
 				
 				robot.execute(mm);
-				//Update map
+		        gui.getGridPanel().getGridContainer().drawGrid(map, r);
+
 				
 				//During exploration, use sensor data to update map
 				if(explorationMode) {
 					mapLayer.processSensorData(sensorData, robot);
-					//Update map
+			        gui.getGridPanel().getGridContainer().drawGrid(map, r);
+
 				}
 			}
 		}else {
@@ -294,16 +302,18 @@ public class ShortestPath {
 					if(fCount == 10) {
 //						robot.moveForwardMultiple(fCount);
 						fCount = 0;
-						//Update map
+//				        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
 						}
 					}else if (mm == RobotAction.Left || mm == RobotAction.Right) {
 						if(fCount > 0) {
 //							robot.moveForwardMultiple(fCount);
 							fCount = 0;
-							//update map
+//					        gui.getGridPanel().getGridContainer().drawGrid(actualMap, r);
 						}
 						
-						robot.execute(mm);
+						r.execute(mm);
+				        gui.getGridPanel().getGridContainer().drawGrid(map, r);
+
 						//update map
 					}
 				}
@@ -429,4 +439,5 @@ public class ShortestPath {
 			System.out.println("\n");
 		}
 	}
+
 }
