@@ -6,7 +6,7 @@ import map.*;
  * @author user
  */
 public enum Direction {
-    North, South, East, West;
+    North, East, South, West;
     public Direction getRight(){             //get the direction on map after turning
         switch(this){
             case North: return East;

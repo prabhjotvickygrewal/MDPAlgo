@@ -11,7 +11,7 @@ import java.util.LinkedList;
 public class MapLayer {
     private Map map;
     private PointState[][] states;
-    public static final int Sensor_ShortRange=5;
+    public static final int Sensor_ShortRange=3;
     public static final int Sensor_LongRange=8;
 
     public MapLayer(Map map){
