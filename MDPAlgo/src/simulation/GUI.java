@@ -16,6 +16,9 @@ import java.awt.event.MouseEvent;
 import javax.swing.JTextField;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+
+import algorithm.Algorithm;
+
 import javax.swing.JLabel;
 import javax.swing.border.LineBorder;
 import javax.swing.JCheckBox;
@@ -63,20 +66,38 @@ public class GUI extends JFrame {
 	 */
 	public GUI() {
 //        LinkedList<Vector> obstacle=new LinkedList<>();
-//        obstacle.add(new Vector(14,4));
-//        obstacle.add(new Vector(15,4));
-//        obstacle.add(new Vector(16,4));
-//        obstacle.add(new Vector(17,4));
-//        obstacle.add(new Vector(18,4));
-//        obstacle.add(new Vector(14,5));
-//        obstacle.add(new Vector(14,6));
-//        obstacle.add(new Vector(14,7));
-//        obstacle.add(new Vector(14,3));
-//        obstacle.add(new Vector(14,8));
+//        obstacle.add(new Vector(4,5));
+//        obstacle.add(new Vector(4,6));
+//        obstacle.add(new Vector(4,7));
+//        obstacle.add(new Vector(4,8));
+//        obstacle.add(new Vector(4,9));
+//        obstacle.add(new Vector(4,10));
+//        obstacle.add(new Vector(5,5));
+//        obstacle.add(new Vector(5,6));
+//        obstacle.add(new Vector(5,7));
+//        obstacle.add(new Vector(5,8));
+//        obstacle.add(new Vector(5,9));
+//        obstacle.add(new Vector(5,10));
+//        obstacle.add(new Vector(11,5));
+//        obstacle.add(new Vector(11,6));
+//        obstacle.add(new Vector(11,7));
+//        obstacle.add(new Vector(11,8));
+//        obstacle.add(new Vector(11,9));
+//        obstacle.add(new Vector(11,10));
 //        obstacle.add(new Vector(10,5));
 //        obstacle.add(new Vector(10,6));
 //        obstacle.add(new Vector(10,7));
-//        obstacle.add(new Vector(10,3));
+//        obstacle.add(new Vector(10,8));
+//        obstacle.add(new Vector(10,9));
+//        obstacle.add(new Vector(10,10));
+//        obstacle.add(new Vector(13,2));
+//        obstacle.add(new Vector(13,3));
+//        obstacle.add(new Vector(13,4));
+//        obstacle.add(new Vector(13,5));
+//        obstacle.add(new Vector(14,11));
+//        obstacle.add(new Vector(14,12));
+//        obstacle.add(new Vector(14,13));
+//        obstacle.add(new Vector(17,7));
 //        realMap=new Map(obstacle);
 		robot=new Robot();
 		realMap=new Map(PointState.IsFree);
@@ -124,7 +145,7 @@ public class GUI extends JFrame {
 		btnShortestPath.addMouseListener(new MouseAdapter(){
 			@Override
 			public void mouseClicked(MouseEvent arg0){
-				eventHandler.shortestPath(robot, realMap, speedText.getText(), isSimulation.isSelected());
+				eventHandler.shortestPath(robot, realMap, timeLimitText.getText(),speedText.getText(), isSimulation.isSelected());
 			}
 		});
 		btnShortestPath.setBounds(235, 68, 120, 23);
@@ -172,7 +193,7 @@ public class GUI extends JFrame {
         	@Override
         	public void mouseClicked(MouseEvent arg0){
         		robotMap=robot.getMap();
-        		eventHandler.saveMap(textField.getText(), robotMap);
+        		eventHandler.saveMap(textField.getText(), !explored?realMap:robotMap);
         	}
         });
 		btnSaveMap.setBounds(245, 26, 90, 23);

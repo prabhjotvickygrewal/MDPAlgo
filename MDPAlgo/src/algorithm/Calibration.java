@@ -8,15 +8,17 @@ public class Calibration {
 	private static int moveCount=0;
 	private static Robot robot;
 	private static MapLayer layer;
+	private static final int MAX_COUNT=3;
 	
 	public static void calibrate(Robot r, MapLayer m){
 		robot=r;
 		layer=m;
-		if(moveCount>5){
+		boolean succ=false;
+		if(moveCount>MAX_COUNT){
 			if(checkRightAlignmentPossible()){
 				if(!Algorithm.isSimulating){
 					Comm.sendToRobot("5\n");
-					while(!Comm.checkCalibrationCompleted());
+					succ=Comm.checkCalibrationCompleted();
 				}
 				else{
 					System.out.println("calibrating");
@@ -25,13 +27,13 @@ public class Calibration {
 			        } catch(InterruptedException ex) {
 			            Thread.currentThread().interrupt();
 			        }
+			        succ=true;
 				}
-				moveCount=0;
 			}
 			else if(checkFrontAlignmentPossible()){
 				if(!Algorithm.isSimulating){
 					Comm.sendToRobot("7\n");
-					while(!Comm.checkCalibrationCompleted());
+					succ=Comm.checkCalibrationCompleted();
 				}
 				else{
 					System.out.println("calibrating");
@@ -40,9 +42,11 @@ public class Calibration {
 			        } catch(InterruptedException ex) {
 			            Thread.currentThread().interrupt();
 			        }
+			        succ=true;
 				}
-				moveCount=0;
 			}
+			if(succ)
+				moveCount=0;
 		}
 	}
 	public static void addMoveCount(){
@@ -53,18 +57,19 @@ public class Calibration {
     	Vector pos=robot.getPos();
     	Direction ori=robot.getOri();
     	Vector rightVector=ori.getRight().toVector();
-    	boolean right_t=layer.checkIsFree(pos.nAdd(rightVector.nMultiply(2)).nAdd(ori.toVector()));
-    	boolean right_b=layer.checkIsFree(pos.nAdd(rightVector.nMultiply(2)).nAdd(ori.getDown().toVector()));
-    	return (!right_t && !right_b);
+    	boolean right_t=layer.checkIsObstacle(pos.nAdd(rightVector.nMultiply(2)).nAdd(ori.toVector()));
+    	boolean right_m=layer.checkIsObstacle(pos.nAdd(rightVector).nMultiply(2));
+    	boolean right_b=layer.checkIsObstacle(pos.nAdd(rightVector.nMultiply(2)).nAdd(ori.getDown().toVector()));
+    	return (right_t && right_m && right_b);
     }
     public static boolean checkFrontAlignmentPossible(){
         Vector rightVector=robot.getOri().getRight().toVector();
         Vector upVector=robot.getOri().toVector();
         Vector leftVector=robot.getOri().getLeft().toVector();
-        boolean up_l=layer.checkIsFree(robot.getPos().nAdd(upVector.nMultiply(2)).nAdd(leftVector));
-        boolean up_m=layer.checkIsFree(robot.getPos().nAdd(upVector.nMultiply(2)));
-        boolean up_r=layer.checkIsFree(robot.getPos().nAdd(upVector.nMultiply(2)).nAdd(rightVector));
-        if(!up_l && !up_m && !up_r)                    //check whether in front are all obstacles
+        boolean up_l=layer.checkIsObstacle(robot.getPos().nAdd(upVector.nMultiply(2)).nAdd(leftVector));
+        boolean up_m=layer.checkIsObstacle(robot.getPos().nAdd(upVector.nMultiply(2)));
+        boolean up_r=layer.checkIsObstacle(robot.getPos().nAdd(upVector.nMultiply(2)).nAdd(rightVector));
+        if(up_l && up_m && up_r)                    //check whether in front are all obstacles
             return true;
         else
             return false;

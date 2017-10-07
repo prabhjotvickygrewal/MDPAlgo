@@ -43,7 +43,7 @@ public class Comm {
     public static void sendToAndroid(String string){
         try{
             String st="AB"+string;
-            out.write(st,0,st.length());
+            out.write(st+"\n",0,st.length()+1);
             out.flush();
 //            out.write(st, 0, st.length());
         }
@@ -54,7 +54,7 @@ public class Comm {
     public static void sendToRobot(String string){
     	
     	try {
-            Thread.sleep(100);                 //1000 milliseconds is one second.
+            Thread.sleep(150);                 //delay for rpi
         } catch(InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
@@ -62,9 +62,6 @@ public class Comm {
 	        String st="AC"+string;
 	        out.write(st,0,st.length());
 	        out.flush();
-//	        st="ABmove::"+string;
-//	        out.write(st, 0, st.length());
-//	        out.flush();
     	}
         catch(IOException e){
         	e.printStackTrace();
@@ -75,8 +72,7 @@ public class Comm {
     	try{
 	    	String s=in.readLine();
 	    	System.out.println(s);
-	    	s=s.substring(2, s.length());
-    		System.out.println("received");
+//    		System.out.println("received");
     		System.out.println(s);
 	    	return (s.equals("-2") || s.equals("-2\n") || s.equals("-2\r\n"));
     	}
@@ -89,9 +85,19 @@ public class Comm {
 //    	System.out.println("calibrating");
     	try{
     		String s=in.readLine();
-    		s=s.substring(2, s.length());
     		System.out.println(s);
-    		return (s.equals("1") || s.equals("1\n"));
+    		return (s.equals("1") || s.equals("1\n") || s.equals("1\r\n"));
+    	}
+    	catch(IOException e){
+    		e.printStackTrace();
+    		return false;
+    	}
+    }
+    public static boolean checkArduinoMessage(String st){
+    	try{
+    		String s=in.readLine();
+    		System.out.println(s);
+    		return (s.equals(st) || s.equals(st+"\n") || s.equals(st+"\r\n"));
     	}
     	catch(IOException e){
     		e.printStackTrace();
@@ -102,24 +108,24 @@ public class Comm {
     	System.out.println("scanning");
     	try{
     		String s=in.readLine();
-    		s=s.substring(2, s.length());
-    		System.out.println("recived");
+//    		System.out.println("recived");
     		if(s.length()>=11)    			
     			return s;
     	}
     	catch(IOException e){
     		e.printStackTrace();
     	}
-        return "0,0,0,0,0,0";
+        return "0";
     }
     public static boolean checkAndroidMessage(String st){
     	System.out.println("wait for android instruction "+st);
     	try{
     		String s=in.readLine();
-    		s=s.substring(2, s.length());
-    		System.out.println("received");
+            System.out.println(s);
+//    		System.out.println("received");
     		
     		if(s.contains("startpoint")){
+    			System.out.println(s);
     			int cur=11;
     			String fragment="";
     			while(s.charAt(cur)!=':'){
@@ -133,8 +139,10 @@ public class Comm {
     			int y=Integer.parseInt(fragment);
     			Algorithm.startPoint=new Vector(x,y);
     			
+    			System.out.println(Algorithm.startPoint.toString());
     		}
     		else if(s.contains("endpoint")){
+    			System.out.println(s);
     			int cur=9;
     			String fragment="";
     			while(s.charAt(cur)!=':'){
@@ -147,6 +155,8 @@ public class Comm {
     			fragment=s.substring(cur, s.length());
     			int y=Integer.parseInt(fragment);
     			Algorithm.endPoint=new Vector(x,y);
+    			
+    			System.out.println(Algorithm.endPoint.toString());
     		}
     		else if(s.contains("waypoint")){
     			int cur=9;
@@ -162,7 +172,7 @@ public class Comm {
     			int y=Integer.parseInt(fragment);
     			Algorithm.wayPoint= new Vector(x,y);
     		}
-    		return (s.equals(st) || s.equals(st+"\n"));
+    		return (s.equals(st) || s.equals(st+"\n") || s.equals(st+"\r\n"));
     	}
     	catch(IOException e){
     		e.printStackTrace();

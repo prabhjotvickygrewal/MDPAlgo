@@ -6,8 +6,8 @@ import java.util.LinkedList;
  * @author user
  */
 public class Map {
-    public static final int MAX_X=20;
-    public static final int MAX_Y=15;
+    public static final int MAX_X=15;
+    public static final int MAX_Y=20;
     private Point[][] pointMap;
     
     //Initiate map with all points unknown
@@ -66,7 +66,7 @@ public class Map {
             		pointMap[i][j].setState(PointState.VirtualWall);
                 if(pointMap[i][j].getState() == PointState.Obstacle) {
                 	for(int a = -1; a <= 1;a++)
-                		for (int b = -1; b < 1; b++) {
+                		for (int b = -1; b <= 1; b++) {
                 			if(checkInsideBoundary(i+a,j+b) && pointMap[i+a][j+b].getState() != PointState.Obstacle) {
                 				pointMap[i+a][j+b].setState(PointState.VirtualWall);
                 			}

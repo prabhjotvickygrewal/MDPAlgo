@@ -161,10 +161,10 @@ public class ShortestPath {
 			
 			closed.add(currentPoint);
 			open.remove(currentPoint);
-			System.out.println("Added (" + currentPoint.getPos().x + ", " + currentPoint.getPos().y + ")");
+//			System.out.println("Added (" + currentPoint.getPos().x + ", " + currentPoint.getPos().y + ")");
 			
 			if(closed.contains(map.getPointMap(goalX, goalY))) {
-				System.out.println("Reached goal!");
+//				System.out.println("Reached goal!");
 				path = getPath(goalX, goalY);
 				printShortestPath(path);
 				return shortestPathMovements(path, goalX, goalY, gui);
@@ -238,6 +238,7 @@ public class ShortestPath {
 	private String shortestPathMovements(Stack<Point> path, int goalX, int goalY, GUI gui) {
 		StringBuilder movementString = new StringBuilder();
 		Robot virtualR=new Robot(robot.getMap(),robot.getOri(),robot.getPos());
+		virtualR.setVirtual(true);
 		Point p = path.pop();
 		Direction targetDir;
 		ArrayList<RobotAction> movement = new ArrayList<>();
@@ -259,7 +260,7 @@ public class ShortestPath {
 				ra = RobotAction.Forward;
 			}
 			System.out.println("Move " + ra.name() + " from (" + virtualR.getPos().x +", " + virtualR.getPos().y + ")");
-			virtualR.execute(ra,false);
+			virtualR.execute(ra);
 //			gui.getGridPanel().getGridContainer().drawGrid(map, robot);
 //			for(int i = 0; i< Map.MAX_X; i++) {
 //				for (int j = 0; j < Map.MAX_Y; j++) {
@@ -270,26 +271,28 @@ public class ShortestPath {
 			movementString.append(ra.name());
 		}
 		
-		if(Algorithm.isSimulating || explorationMode) {
-			for (RobotAction mm : movement) {
-				if(mm == RobotAction.Forward) {
-					if(!isUpFree()) {
-						System.out.println("Early termination of shortest path execution.");
-						return "T";
-					}
-				}
-				
-				robot.execute(mm,true);
-				//During exploration, use sensor data to update map
-				if(explorationMode) {
-			        Algorithm.scan(gui);
-				}
-				else{
-			        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
-				}
-			}
-		}
-		else {
+//		if(Algorithm.isSimulating) {
+//			for (RobotAction mm : movement) {
+//				if(mm == RobotAction.Forward) {
+//					if(!isUpFree()) {
+//						System.out.println("Early termination of shortest path execution.");
+//						return "T";
+//					}
+//				}
+//				
+//				robot.execute(mm);
+//				if(Algorithm.checkTimeLimitReached())
+//					return movementString.toString();
+//				//During exploration, use sensor data to update map
+//				if(explorationMode) {
+//			        while(!Algorithm.scan(gui));
+//				}
+//				else{
+//			        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
+//				}
+//			}
+//		}
+//		else {
 			int fCount = 0;
 			for (RobotAction mm : movement) {
 				if(mm == RobotAction.Forward) {
@@ -302,53 +305,43 @@ public class ShortestPath {
 				}
 				else if (mm == RobotAction.Left || mm == RobotAction.Right) {
 						if(fCount > 0) {
-							robot.moveForwardMultiple(fCount);
+							robot.moveForwardMultiple(fCount,gui);
+							if(explorationMode) {
+						        while(!Algorithm.scan(gui));
+							}
+							else{
+						        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
+							}
 							fCount = 0;
-					        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
 						}						
-						robot.execute(mm, true);
-				        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
+						robot.execute(mm);
+						if(explorationMode) {
+					        while(!Algorithm.scan(gui));
+						}
+						else{
+							gui.getGridPanel().getGridContainer().drawGrid(map, robot);
+						}
+				        if(Algorithm.checkTimeLimitReached())
+							return movementString.toString();
 					}
 				}
 			if(fCount > 0) {
-				robot.moveForwardMultiple(fCount);
-		        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
+				robot.moveForwardMultiple(fCount,gui);
+				if(explorationMode) {
+			        while(!Algorithm.scan(gui));
+				}
+				else{
+					gui.getGridPanel().getGridContainer().drawGrid(map, robot);
+				}
+		        if(Algorithm.checkTimeLimitReached())
+					return movementString.toString();
 			}
-		}
+//		}
 		System.out.println("\nMovements: " + movementString.toString());
 		return movementString.toString();
 	}
 	
-	//Returns true if robot can move one point forward in current orientation
-//	private boolean canMoveForward() {
-//		int x = robot.getPos().x;
-//		int y = robot.getPos().y;
-//		
-//		switch(robot.getOri()) {
-//		case North:
-//			if(map.checkIsFree(map.getPointMap(x-1, y+2)) && map.checkIsFree(map.getPointMap(x, y+2)) && map.checkIsFree(map.getPointMap(x+1, y+2))) {
-//				return true;
-//			}
-//			break;
-//		case East:
-//			if(map.checkIsFree(map.getPointMap(x+2, y-1)) && map.checkIsFree(map.getPointMap(x+2, y)) && map.checkIsFree(map.getPointMap(x+2, y+1))) {
-//				return true;
-//			}
-//			break;
-//		case South:
-//			if(map.checkIsFree(map.getPointMap(x-1, y-2)) && map.checkIsFree(map.getPointMap(x, y-2)) && map.checkIsFree(map.getPointMap(x+1, y-2))) {
-//				return true;
-//			}
-//			break;
-//		case West:
-//			if(map.checkIsFree(map.getPointMap(x-2, y-1)) && map.checkIsFree(map.getPointMap(x-2, y)) && map.checkIsFree(map.getPointMap(x-2, y+1))) {
-//				return true;
-//			}
-//			break;				
-//		}
-//		return false;
-//	}
-//	
+
     public boolean isUpFree(){
         Vector rightVector=robot.getOri().getRight().toVector();
         Vector upVector=robot.getOri().toVector();

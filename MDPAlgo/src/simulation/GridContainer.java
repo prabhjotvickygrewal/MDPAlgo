@@ -14,7 +14,7 @@ public class GridContainer extends JPanel{
 	
 	public GridContainer(Map map, Robot r){
 		this.setLayout(new FlowLayout(FlowLayout.LEFT, GAP,GAP));
-		this.setPreferredSize(new Dimension(BLOCK_SIZE*Map.MAX_X+GAP*(Map.MAX_X+1), BLOCK_SIZE*Map.MAX_Y+GAP*(Map.MAX_Y+1)));
+		this.setPreferredSize(new Dimension(BLOCK_SIZE*Map.MAX_Y+GAP*(Map.MAX_Y+1), BLOCK_SIZE*Map.MAX_X+GAP*(Map.MAX_X+1)));
 		this.setBackground(ColorConfig.BG);
 		drawGrid(map, r);
 	}
@@ -27,8 +27,8 @@ public class GridContainer extends JPanel{
 			grid=new GridBlock[Map.MAX_X][Map.MAX_Y];
 			isFirstTime=true;
 		}
-		for(int j=0;j<Map.MAX_Y;j++)
-			for(int i=0;i<Map.MAX_X;i++){
+		for(int i=0;i<Map.MAX_X;i++)
+			for(int j=0;j<Map.MAX_Y;j++){
 				cur=new Vector(i,j);
 				Color target=ColorConfig.NORMAL;
 				if(isFirstTime){

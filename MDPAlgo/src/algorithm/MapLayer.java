@@ -2,7 +2,7 @@
 package algorithm;
 import map.*;
 import robot.*;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 /**
  *
@@ -12,7 +12,7 @@ public class MapLayer {
     private Map map;
     private PointState[][] states;
     public static final int Sensor_ShortRange=3;
-    public static final int Sensor_LongRange=8;
+    public static final int Sensor_LongRange=7;
 
     public MapLayer(Map map){
         this.map=map;
@@ -91,43 +91,54 @@ public class MapLayer {
                 setStateAt(pos.nAdd(upVector.nMultiply(i+1)).nAdd(rightVector), PointState.IsFree);
         map.updatePointMap(states);
     }
-    public LinkedList<Vector> getRemainedPoint(Vector pos){
-        LinkedList<Vector> remainedPoint=new LinkedList<>();
-        Vector curPoint;
-        for(int i=1;i<Map.MAX_X;i++){
-            curPoint=pos.nAdd(new Vector(-i,-i));
-            for(int j=0;j<i*2;j++){
-                if(checkIsUnknown(curPoint))
-                    remainedPoint.add(curPoint);
-                curPoint=curPoint.nAdd(new Vector(1,0));
-            }
-            for(int j=0;j<i*2;j++){
-                if(checkIsUnknown(curPoint))
-                    remainedPoint.add(curPoint);
-                curPoint=curPoint.nAdd(new Vector(0,1));
-            }
-            for(int j=0;j<i*2;j++){
-                if(checkIsUnknown(curPoint))
-                    remainedPoint.add(curPoint);
-                curPoint=curPoint.nAdd(new Vector(-1,0));
-            }
-            for(int j=0;j<i*2;j++){
-                if(checkIsUnknown(curPoint))
-                    remainedPoint.add(curPoint);
-                curPoint=curPoint.nAdd(new Vector(0,-1));
-            }
-        }
-        return remainedPoint;
-    }
-    public boolean checkEnclosureLargeEnough(Vector v){
-        Vector cur;
-        for(int i=-1;i<=1;i++)
-            for(int j=-1;j<=1;j++){
-                cur=v.nAdd(new Vector(i,j));
-                if(!checkInsideBoundary(cur) || !(checkIsUnknown(cur) || checkIsFree(cur)))
-                    return false;
-            }
-        return true;
+//    public LinkedList<Vector> getRemainedPoint(Vector pos){
+//        LinkedList<Vector> remainedPoint=new LinkedList<>();
+//        Vector curPoint;
+//        for(int i=1;i<Map.MAX_Y;i++){
+//            curPoint=pos.nAdd(new Vector(-i,-i));
+//            for(int j=0;j<i*2;j++){
+//                if(checkIsUnknown(curPoint))
+//                    remainedPoint.add(curPoint);
+//                curPoint=curPoint.nAdd(new Vector(1,0));
+//            }
+//            for(int j=0;j<i*2;j++){
+//                if(checkIsUnknown(curPoint))
+//                    remainedPoint.add(curPoint);
+//                curPoint=curPoint.nAdd(new Vector(0,1));
+//            }
+//            for(int j=0;j<i*2;j++){
+//                if(checkIsUnknown(curPoint))
+//                    remainedPoint.add(curPoint);
+//                curPoint=curPoint.nAdd(new Vector(-1,0));
+//            }
+//            for(int j=0;j<i*2;j++){
+//                if(checkIsUnknown(curPoint))
+//                    remainedPoint.add(curPoint);
+//                curPoint=curPoint.nAdd(new Vector(0,-1));
+//            }
+//        }
+//        for(Vector v:remainedPoint)
+//        	System.out.print(v+"  ");
+//        return remainedPoint;
+//    }
+    
+//    public boolean checkEnclosureLargeEnough(Vector v){
+//        Vector cur;
+//        for(int i=-1;i<=1;i++)
+//            for(int j=-1;j<=1;j++){
+//                cur=v.nAdd(new Vector(i,j));
+//                if(!checkInsideBoundary(cur) || !(checkIsUnknown(cur) || checkIsFree(cur)))
+//                    return false;
+//            }
+//        return true;
+//    }
+    public ArrayList<Vector> getRemainedPoint(){
+    	ArrayList<Vector> remained=new ArrayList<Vector>();
+    	for(int i=0;i<Map.MAX_X;i++)
+    		for(int j=0;j<Map.MAX_Y;j++)
+    			if(states[i][j]==PointState.Unknown)
+    				remained.add(new Vector(i,j));
+    	return remained;
     }
     public boolean checkExplorable(Vector v){
     	 boolean isUpperBlocked=!checkIsBlockFree(v.nAdd(new Vector(0,2)));
@@ -150,8 +161,10 @@ public class MapLayer {
         if(checkInsideBoundary(v)){
             if(states[v.x][v.y]==PointState.Unknown)
                 states[v.x][v.y]=pState;
-            else if(states[v.x][v.y]!=pState)
+            else if(states[v.x][v.y]!=pState){
                 System.out.println("Data Inconsistency!");
+                states[v.x][v.y]=pState;
+            }
         }
     }
     public boolean checkInsideBoundary(Vector v){
@@ -159,7 +172,7 @@ public class MapLayer {
     }
     public boolean checkIsFree(Vector v){
         if(checkInsideBoundary(v))
-            if(states[v.x][v.y]==PointState.IsFree)
+            if(states[v.x][v.y]==PointState.IsFree || states[v.x][v.y]==PointState.VirtualWall)
                 return true;
         return false;
     }
@@ -167,6 +180,13 @@ public class MapLayer {
         if(checkInsideBoundary(v))
             if(states[v.x][v.y]==PointState.Unknown)
                 return true;
+        return false;
+    }
+    public boolean checkIsObstacle(Vector v){
+    	if(!checkInsideBoundary(v))
+    		return true;
+        if(states[v.x][v.y]==PointState.Obstacle)
+            return true;
         return false;
     }
     public void updateMap(){

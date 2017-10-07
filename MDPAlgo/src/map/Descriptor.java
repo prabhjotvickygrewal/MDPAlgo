@@ -28,7 +28,7 @@ public class Descriptor {
 	    }
 		for(int i=0;i<Map.MAX_X*Map.MAX_Y;i++)             //mark unknown points
 			if(binary1.charAt(i)=='0')
-				states[i/Map.MAX_Y][i%Map.MAX_Y]=PointState.Unknown;
+				states[i%Map.MAX_X][i/Map.MAX_X]=PointState.Unknown;
 		
 		if(hex2!=null)
 			for(int i = 0; i < hex2.length(); i++){           //convert char one by one
@@ -39,8 +39,8 @@ public class Descriptor {
 		        binary2 += binFragment;
 		    }
 			int cur=0;
-			for(int i=0;i<Map.MAX_X;i++)
-				for(int j=0;j<Map.MAX_Y;j++){
+			for(int j=0;j<Map.MAX_Y;j++)
+				for(int i=0;i<Map.MAX_X;i++){
 					if(states[i][j]!=PointState.Unknown){
 						if(binary2.charAt(cur)=='0')
 							states[i][j]=PointState.IsFree;
@@ -60,8 +60,8 @@ public class Descriptor {
 		String binary1="11";
 		String hex1=new String();
 		
-		for(int i=0;i<Map.MAX_X;i++)
-			for(int j=0;j<Map.MAX_Y;j++){
+		for(int j=0;j<Map.MAX_Y;j++)
+			for(int i=0;i<Map.MAX_X;i++){
 				if(states[i][j]==PointState.Unknown)
 					binary1 += "0";
 				else
@@ -79,9 +79,9 @@ public class Descriptor {
 		String binary2=new String();
 		String hex2=new String();
 		
-		for(int i=0;i<Map.MAX_X;i++)
-			for(int j=0;j<Map.MAX_Y;j++){
-				if(states[i][j]==PointState.IsFree)
+		for(int j=0;j<Map.MAX_Y;j++)
+			for(int i=0;i<Map.MAX_X;i++){
+				if(states[i][j]==PointState.IsFree || states[i][j]==PointState.VirtualWall)
 					binary2 =binary2+"0";
 				else if(states[i][j]==PointState.Obstacle)
 					binary2 =binary2+ "1";
@@ -93,7 +93,7 @@ public class Descriptor {
 			String binFragment=binary2.substring(i*4, i*4+4);
 			hex2 = hex2+Integer.toString(Integer.parseInt(binFragment, 2), 16);
 		}
-//		System.out.println(hex2);
+		System.out.println(hex2);
 		return hex2;
 	}
 

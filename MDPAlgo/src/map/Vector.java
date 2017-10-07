@@ -38,6 +38,6 @@ public class Vector {
         }
     }
     public String toString(){
-        return "("+y+","+x+")";
+        return "("+x+","+y+")";
     }
 }

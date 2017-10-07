@@ -29,7 +29,7 @@ public class EventHandler {
     	if(time.length()!=0)
     		timeLimit=Integer.parseInt(time);
     	else
-    		timeLimit=100;
+    		timeLimit=600;
     	
     	if(cov.length()!=0)
     		covLimit=Integer.parseInt(cov);
@@ -56,17 +56,22 @@ public class EventHandler {
         };
         explore.execute();
     }
-    public void shortestPath(Robot r, Map m, String speed, boolean isSimulating){
-    	int stepPerSecond;
+    public void shortestPath(Robot r, Map m, String time, String speed, boolean isSimulating){
+    	int stepPerSecond, timeLimit;
     	if(GUI.explored)
     		sp=new ShortestPath(r.getMap(),r, false);
     	else
     		sp=new ShortestPath(m,r, false);
     	
+    	if(time.length()!=0)
+    		timeLimit=Integer.parseInt(time);
+    	else
+    		timeLimit=600;
     	if(algo==null){
             Simulator simulator=new Simulator(m);
             algo=new Algorithm(simulator,r,isSimulating);
     	}
+        Algorithm.timeLimit=timeLimit;
     	
     	if(speed.length()!=0)
     		stepPerSecond=Integer.parseInt(speed);
