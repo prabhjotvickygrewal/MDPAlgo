@@ -6,19 +6,28 @@ import communication.*;
 
 public class Calibration {
 	private static int moveCount=0;
+	private static int turnCount=0;
 	private static Robot robot;
 	private static MapLayer layer;
-	private static final int MAX_COUNT=3;
+	private static final int MAX_MOVECOUNT=4;
+	private static final int MAX_TURNCOUNT=2;
+
 	
 	public static void calibrate(Robot r, MapLayer m){
 		robot=r;
 		layer=m;
 		boolean succ=false;
-		if(moveCount>MAX_COUNT){
+		if(moveCount>MAX_MOVECOUNT || turnCount>MAX_TURNCOUNT){
 			if(checkRightAlignmentPossible()){
 				if(!Algorithm.isSimulating){
 					Comm.sendToRobot("5\n");
-					succ=Comm.checkCalibrationCompleted();
+					int count=0;
+					do{
+						succ=Comm.checkCalibrationCompleted();
+						count++;
+						if(count>5)
+							break;
+					}while(succ!=true);
 				}
 				else{
 					System.out.println("calibrating");
@@ -33,24 +42,35 @@ public class Calibration {
 			else if(checkFrontAlignmentPossible()){
 				if(!Algorithm.isSimulating){
 					Comm.sendToRobot("7\n");
-					succ=Comm.checkCalibrationCompleted();
+					int count=0;
+					do{
+						succ=Comm.checkCalibrationCompleted();
+						count++;
+						if(count>5)
+							break;
+					}while(succ!=true);			
 				}
 				else{
 					System.out.println("calibrating");
 			        try {
-			            Thread.sleep(2000);                 //1000 milliseconds is one second.
+			            Thread.sleep(500);                 //1000 milliseconds is one second.
 			        } catch(InterruptedException ex) {
 			            Thread.currentThread().interrupt();
 			        }
 			        succ=true;
 				}
 			}
-			if(succ)
-				moveCount=0;
+			if(succ){
+					moveCount=0;
+					turnCount=0;
+			}
 		}
 	}
 	public static void addMoveCount(){
 		moveCount++;
+	}
+	public static void addTurnCount(){
+		turnCount++;
 	}
 	
     public static boolean checkRightAlignmentPossible(){

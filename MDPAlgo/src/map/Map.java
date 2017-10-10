@@ -62,12 +62,16 @@ public class Map {
     public void updateVirtualWall() {
     	for(int i=0;i<MAX_X;i++)
             for(int j=0;j<MAX_Y;j++) {
-            	if((i == 0 || i == MAX_X-1 || j ==0 || j == MAX_Y-1) && (pointMap[i][j].getState() != PointState.Obstacle))
+            	if((i == 0 || i == MAX_X-1 || j ==0 || j == MAX_Y-1) 
+            			&& (pointMap[i][j].getState() != PointState.Obstacle)
+            			&& (pointMap[i][j].getState() != PointState.Unknown))
             		pointMap[i][j].setState(PointState.VirtualWall);
                 if(pointMap[i][j].getState() == PointState.Obstacle) {
                 	for(int a = -1; a <= 1;a++)
                 		for (int b = -1; b <= 1; b++) {
-                			if(checkInsideBoundary(i+a,j+b) && pointMap[i+a][j+b].getState() != PointState.Obstacle) {
+                			if(checkInsideBoundary(i+a,j+b) 
+                					&& (pointMap[i+a][j+b].getState() != PointState.Obstacle)
+                					&& (pointMap[i+a][j+b].getState() != PointState.Unknown)) {
                 				pointMap[i+a][j+b].setState(PointState.VirtualWall);
                 			}
                 		}

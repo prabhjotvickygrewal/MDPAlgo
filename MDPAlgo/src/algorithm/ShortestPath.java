@@ -26,7 +26,6 @@ public class ShortestPath {
 	private int loopCount;
 	private boolean explorationMode=true;
 //	private MapLayer mapLayer;
-	private SensorData sensorData;
 	
 	public ShortestPath(Map map, Robot robot, boolean explorationMode) {
 //		this.actualMap = null;
@@ -242,7 +241,6 @@ public class ShortestPath {
 		Point p = path.pop();
 		Direction targetDir;
 		ArrayList<RobotAction> movement = new ArrayList<>();
-		//Speed?
 		
 		while((virtualR.getPos().x != goalX) || (virtualR.getPos().y != goalY)) {
 			if(virtualR.getPos().x == p.getPos().x && virtualR.getPos().y == p.getPos().y) {
@@ -303,7 +301,7 @@ public class ShortestPath {
 //				        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
 //					}
 				}
-				else if (mm == RobotAction.Left || mm == RobotAction.Right) {
+				else if (mm == RobotAction.Left || mm == RobotAction.Right || mm == RobotAction.Backward) {
 						if(fCount > 0) {
 							robot.moveForwardMultiple(fCount,gui);
 							if(explorationMode) {
@@ -362,7 +360,7 @@ public class ShortestPath {
 			case North:
 				return RobotAction.Error;
 			case South:
-				return RobotAction.Left;
+				return RobotAction.Backward;
 			case West:
 				return RobotAction.Left;
 			case East:
@@ -372,7 +370,7 @@ public class ShortestPath {
 		case South:
 			switch(b) {
 			case North:
-				return RobotAction.Left;
+				return RobotAction.Backward;
 			case South:
 				return RobotAction.Error;
 			case West:
@@ -390,7 +388,7 @@ public class ShortestPath {
 			case West:
 				return RobotAction.Error;
 			case East:
-				return RobotAction.Left;
+				return RobotAction.Backward;
 			}
 			break;
 		case East:
@@ -400,7 +398,7 @@ public class ShortestPath {
 			case South:
 				return RobotAction.Right;
 			case West:
-				return RobotAction.Left;
+				return RobotAction.Backward;
 			case East:
 				return RobotAction.Error;
 			}

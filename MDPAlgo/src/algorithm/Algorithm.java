@@ -22,6 +22,7 @@ public class Algorithm {
     private static Comm comm;
     public static boolean isSimulating;
     public static boolean androidEnabled=false;
+    public static boolean simplifyActionEnabled=false;
     public static Vector startPoint=new Vector(1,1);
     public static Vector endPoint=new Vector(13,18);
     public static Vector wayPoint;
@@ -57,6 +58,8 @@ public class Algorithm {
         ShortestPath sp = new ShortestPath(map, robot, true);
         do{
             while(!scan(gui));
+            if(exploreComplete())
+            	break;
             Calibration.calibrate(robot, mapLayer);
             followRightObstacle(gui);
         }while(!checkTimeLimitReached() && !checkCovLimitReached(covLimit) && !reachStartZone());
@@ -64,7 +67,7 @@ public class Algorithm {
         
         if(checkTimeLimitReached() || checkCovLimitReached(covLimit))
         	return;
-        
+        simplifyActionEnabled=false;
         ArrayList<Vector> unknown;
         ArrayList<Vector> unreachable=new ArrayList<Vector>();
         do{
@@ -74,12 +77,15 @@ public class Algorithm {
         	if(unknown.size()==0)
         		break;
         	Vector goal=findNearestExploredPoint(unknown);
+            sp = new ShortestPath(map, robot, true);
 	        if(sp.executeShortestPath(goal.x, goal.y, gui)==null)
 	        	unreachable.add(goal);
 	        else {
 	        	alignToObstacle(gui);
 	            do{
 	                while(!scan(gui));
+	                if(exploreComplete())
+	                	break;
 	                Calibration.calibrate(robot, mapLayer);
 	                System.out.println(robot.getPos() + "  " + robot.getOri());
 	                followRightObstacle(gui);
@@ -88,10 +94,18 @@ public class Algorithm {
         }while(!checkTimeLimitReached() && ! checkCovLimitReached(covLimit) && !exploreComplete());
         if(checkTimeLimitReached() || checkCovLimitReached(covLimit))
         	return;
-        sp.executeShortestPath(startPoint.x, startPoint.x, gui);
+        ShortestPath sp1 = new ShortestPath(map, robot, true);
+        sp1.executeShortestPath(startPoint.x, startPoint.x, gui);
+        robot.explorationFinished();
         System.out.println("exploration finished");
     }
     public void followRightObstacle(GUI gui){
+    	if(robot.getFrequency(robot.getPos())>2)
+			simplifyActionEnabled=false;
+    	if(simplifyActionEnabled){
+	    	if(simplifyAction(gui))
+	    		return;
+    	}
         if(isRightFree()){
             robot.bufferAction(RobotAction.Right);
             robot.bufferAction(RobotAction.Forward);
@@ -141,6 +155,37 @@ public class Algorithm {
         return true;
         
     }
+    
+    public boolean simplifyAction(GUI gui){
+//    	if(isUpAreaExplored()){
+//    		robot.execute(RobotAction.Left);
+//    		while(!scan(gui));
+//    		while(isUpFree()){
+//    			robot.execute(RobotAction.Forward);
+//    			while(!scan(gui));
+//    		}
+//    		robot.execute(RobotAction.Left);
+//    	}
+    	if(isUpRightAreaExplored()){
+    		if(!isLeftFree()){
+    			robot.execute(RobotAction.Backward);
+    			robot.execute(RobotAction.Forward);
+    	        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
+    			if(robot.getFrequency(robot.getPos())>2)
+    				simplifyActionEnabled=false;
+    			return true;
+    		}
+    		while(isUpFree()){
+    			robot.execute(RobotAction.Forward);
+    			if(robot.getFrequency(robot.getPos())>2)
+    				simplifyActionEnabled=false;
+                while(!scan(gui));
+    		}
+    		robot.execute(RobotAction.Left);
+    		return true;
+    	}
+    	return false;
+    }
     public void alignToObstacle(GUI gui){
     	int count=0;
     	while(isRightFree() && count<4){
@@ -159,7 +204,63 @@ public class Algorithm {
                 legalRemainedPoint.add(v);
         return legalRemainedPoint;
     }
-    
+    public static boolean isUpRightAreaExplored() {
+    	Vector rightVector=robot.getOri().getRight().toVector();
+    	Vector upVector=robot.getOri().toVector();
+    	Vector leftVector=robot.getOri().getLeft().toVector();
+    	Vector downVector=robot.getOri().getDown().toVector();
+    	Vector origin=robot.getPos().nAdd(downVector).nAdd(leftVector.nMultiply(2));
+    	int x=0;
+    	int y=0;
+    	while(mapLayer.checkInsideBoundary(origin.nAdd(rightVector.nMultiply(x)))) {
+    		if(mapLayer.checkIsUnknown(origin.nAdd(rightVector.nMultiply(x))))
+    			return false;
+    		x++;
+    	}
+    	while(mapLayer.checkInsideBoundary(origin.nAdd(upVector.nMultiply(y)))) {
+    		if(mapLayer.checkIsUnknown(origin.nAdd(upVector.nMultiply(y))))
+    			return false;
+    		y++;
+    	}
+    	for(int i=1;i<x;i++)
+    		for(int j=1;j<y;j++)
+    			if(mapLayer.checkIsUnknown(origin.nAdd(rightVector.nMultiply(i).nAdd(upVector.nMultiply(j)))))
+    				return false;
+    	return true;
+    		
+    }
+//    public static boolean isUpAreaExplored(){
+//    	int y=0;
+//    	Vector upVector=robot.getOri().toVector();
+//    	while(mapLayer.checkInsideBoundary(robot.getPos().nAdd(upVector.nMultiply(y+2)))) {
+//    		if(mapLayer.checkIsUnknown(robot.getPos().nAdd(upVector.nMultiply(y+2))))
+//    			return false;
+//    		y++;
+//    	}
+//    	
+//		Vector cur=robot.getPos().nAdd(upVector.nMultiply(2));
+//    	if(robot.getOri()==Direction.East || robot.getOri()==Direction.West){
+//    		for(int i=0;i<y;i++){
+//    			for(int j=0;j<Map.MAX_Y;j++){
+//    				cur.y=j;
+//    				if(mapLayer.checkIsUnknown(cur))
+//    					return false;
+//    			}
+//    			cur=cur.nAdd(upVector);
+//    		}
+//    	}
+//    	else{
+//    		for(int i=0;i<Map.MAX_X;i++){
+//				cur.x=i;
+//    			for(int j=0;j<y;j++){
+//    				if(mapLayer.checkIsUnknown(cur))
+//    					return false;
+//        			cur=cur.nAdd(upVector);
+//    			}
+//    		}
+//    	}
+//    	return true;
+//    }
     public static boolean checkTimeLimitReached(){
         currentTime=System.currentTimeMillis();
         long diff=currentTime-startTime;
@@ -209,17 +310,17 @@ public class Algorithm {
 //        else
 //            return false;
 //    }
-//    public boolean isLeftFree(){
-//        Vector leftVector=robot.getOri().getLeft().toVector();
-//        Vector upVector=robot.getOri().toVector();
-//        Vector downVector=robot.getOri().getDown().toVector();
-//        boolean left_t=mapLayer.checkIsFree(robot.getPos().nAdd(leftVector.nMultiply(2)).nAdd(upVector));
-//        boolean left_m=mapLayer.checkIsFree(robot.getPos().nAdd(leftVector.nMultiply(2)));
-//        boolean left_b=mapLayer.checkIsFree(robot.getPos().nAdd(leftVector.nMultiply(2)).nAdd(downVector));
-//        if(left_t && left_m && left_b)           //check whether can move to the right
-//            return true;
-//        return false;
-//    }
+    public boolean isLeftFree(){
+        Vector leftVector=robot.getOri().getLeft().toVector();
+        Vector upVector=robot.getOri().toVector();
+        Vector downVector=robot.getOri().getDown().toVector();
+        boolean left_t=mapLayer.checkIsFree(robot.getPos().nAdd(leftVector.nMultiply(2)).nAdd(upVector));
+        boolean left_m=mapLayer.checkIsFree(robot.getPos().nAdd(leftVector.nMultiply(2)));
+        boolean left_b=mapLayer.checkIsFree(robot.getPos().nAdd(leftVector.nMultiply(2)).nAdd(downVector));
+        if(left_t && left_m && left_b)           //check whether can move to the right
+            return true;
+        return false;
+    }
     
     public Map getMap(){
         return map;

@@ -42,8 +42,8 @@ public class Comm {
     }
     public static void sendToAndroid(String string){
         try{
-            String st="AB"+string;
-            out.write(st+"\n",0,st.length()+1);
+            String st="AB"+string+"\n";
+            out.write(st,0,st.length());
             out.flush();
 //            out.write(st, 0, st.length());
         }
@@ -53,13 +53,13 @@ public class Comm {
     }
     public static void sendToRobot(String string){
     	
-    	try {
-            Thread.sleep(150);                 //delay for rpi
-        } catch(InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        }
+//    	try {
+//            Thread.sleep(50);                 //delay for rpi
+//        } catch(InterruptedException ex) {
+//            Thread.currentThread().interrupt();
+//        }
     	try{
-	        String st="AC"+string;
+	        String st="AC"+string+"\n";
 	        out.write(st,0,st.length());
 	        out.flush();
     	}

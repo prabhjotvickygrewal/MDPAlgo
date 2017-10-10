@@ -49,6 +49,8 @@ public class GridContainer extends JPanel{
 					target=ColorConfig.ROBOT_HEAD;
 				else if(isRobot(cur, r))
 					target=ColorConfig.ROBOT_BODY;
+				else if(onShortestPath(cur,r))
+					target=ColorConfig.PATH;
 				else if(isStartZone(cur))
 					target=ColorConfig.START;
 				else if(isGoalZone(cur))
@@ -88,5 +90,14 @@ public class GridContainer extends JPanel{
 				if(v.equals(Algorithm.endPoint.nAdd(new Vector(i,j))))
 					return true;
 		return false;
+	}
+	public boolean onShortestPath(Vector cur,Robot r){
+		if(r.isRunShortestPath())
+			if(r.onShortestPath(cur))
+				return true;
+		return false;
+	}
+	public GridBlock getGrid(int x,int y){
+		return grid[x][y];
 	}
 }

@@ -25,6 +25,7 @@ public class EventHandler {
     
     
     public void startExploration(Robot r, Map map, String time, String cov, String speed, boolean isSimulating){
+    	GUI.explored=true;
     	final int timeLimit,covLimit, stepPerSecond;
     	if(time.length()!=0)
     		timeLimit=Integer.parseInt(time);
@@ -50,14 +51,12 @@ public class EventHandler {
                 algo.explore(timeLimit, covLimit, gui);
                 return 0;
             }
-            public void done(){
-            	GUI.explored=true;
-            }
         };
         explore.execute();
     }
     public void shortestPath(Robot r, Map m, String time, String speed, boolean isSimulating){
     	int stepPerSecond, timeLimit;
+    	r.setRunShortestPath(true);
     	if(GUI.explored)
     		sp=new ShortestPath(r.getMap(),r, false);
     	else
@@ -79,9 +78,21 @@ public class EventHandler {
     		stepPerSecond=2;
     	
     	Robot.delay=1000/stepPerSecond;
+    	if(Algorithm.androidEnabled){
+    		while(!Comm.checkAndroidMessage("shortestpath")){
+    			r.setPos(new Vector(Algorithm.startPoint.x,Algorithm.startPoint.y));
+    			r.setDefaultOri();
+    			gui.getGridPanel().getGridContainer().drawGrid(r.getMap(), r);
+    		}
+    	}
     	shortestPath=new SwingWorker<Integer,Integer>(){
     		@Override
     		public Integer doInBackground(){
+    			if(Algorithm.wayPoint!=null) {
+    				sp.executeShortestPath(Algorithm.wayPoint.x, Algorithm.wayPoint.y, gui);
+    			}
+    	    	r.setRunShortestPath(true);
+    			sp=new ShortestPath(GUI.explored?r.getMap():m,r,false);
     			sp.executeShortestPath(Algorithm.endPoint.x, Algorithm.endPoint.y, gui);
     			return 0;
     		}
@@ -103,6 +114,15 @@ public class EventHandler {
     		Descriptor.writeFileFromStates(fileName, states);
     	}
     }
+    public void clickBlock(GridBlock block,Map map){
+    	Vector v=block.getVector();
+    	block.toggleBackground();
+    	if(map.getPointStateAt(v)==PointState.IsFree)
+    		map.setPointStateAt(v, PointState.Obstacle);
+    	else if(map.getPointStateAt(v)==PointState.Obstacle)
+    		map.setPointStateAt(v, PointState.IsFree);
+    }
+
     public void exit(){
     	if(!Algorithm.isSimulating)
     		Comm.close();

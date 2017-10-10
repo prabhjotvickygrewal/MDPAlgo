@@ -226,6 +226,17 @@ public class GUI extends JFrame {
 		panel_1.add(speedText);
 		speedText.setColumns(10);
 		
+		for(int i=0;i<Map.MAX_X;i++)
+			for(int j=0;j<Map.MAX_Y;j++){
+				GridBlock block=gridPanel.getGridContainer().getGrid(i, j);
+				block.addMouseListener(new MouseAdapter(){
+					@Override
+					public void mouseClicked(MouseEvent arg0){
+						eventHandler.clickBlock(block, realMap);
+						gridPanel.getGridContainer().drawGrid(realMap, robot);
+					}
+				});
+			}
 	}
         
         public GridPanel getGridPanel(){

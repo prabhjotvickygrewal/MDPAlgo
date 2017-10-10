@@ -14,25 +14,29 @@ import java.util.LinkedList;
  * @author user
  */
 public class Robot {
-	public static final int MAX_STEP=6;
+	public static final int MAX_STEP=20;
 	public static int delay=300;
 	private boolean virtual=false;
+    private boolean runShortestPath=false;
     private Map map;
     private Direction ori;
     private Vector pos;
     private LinkedList<RobotAction> buffer;
-    
+    private LinkedList<Vector> history;
+    private LinkedList<Vector> shortestPath=null;
     public Robot(){
         map=new Map();
         ori=Direction.East;
         pos=new Vector(Algorithm.startPoint.x,Algorithm.startPoint.y);
         buffer=new LinkedList<RobotAction>();
+        history=new LinkedList<Vector>();
     }
     public Robot(Map map, Direction ori,Vector pos){
     	this.map=map;
     	this.ori=ori;
     	this.pos=new Vector(pos.x,pos.y);
     	buffer=new LinkedList<RobotAction>();
+        history=new LinkedList<Vector>();
     }
     public void bufferAction(RobotAction action){
         buffer.add(action);
@@ -40,22 +44,31 @@ public class Robot {
     public void execute(RobotAction action){
         switch(action){
             case Forward:
+            	if(runShortestPath)
+                	shortestPath.add(new Vector(pos.x,pos.y));
                 pos.add(ori.toVector());
                 if(!(Algorithm.isSimulating || virtual)){
                     Comm.sendToRobot("1,1");
                     while(!Comm.checkActionCompleted());
                 }
+                if(!virtual)
+                	history.add(new Vector(pos.x,pos.y));
                 Calibration.addMoveCount();
                 break;
             case Backward:
-                pos.add(ori.getDown().toVector());
+//            	if(runShortestPath)
+//                	shortestPath.add(new Vector(pos.x,pos.y));
+//                pos.add(ori.getDown().toVector());
+                ori=ori.getDown();
                 if(!(Algorithm.isSimulating || virtual)){
                     Comm.sendToRobot("2,180,1");
                     while(!Comm.checkActionCompleted());
-                    Comm.sendToRobot("1,1");
-                    while(!Comm.checkActionCompleted());
+//                    Comm.sendToRobot("1,1");
+//                    while(!Comm.checkActionCompleted());
                 }
-                Calibration.addMoveCount();
+//                if(!virtual)
+//                	history.add(new Vector(pos.x,pos.y));
+                Calibration.addTurnCount();
                 break;
             case Right:
                 ori=ori.getRight();
@@ -63,6 +76,7 @@ public class Robot {
                     Comm.sendToRobot("2,90,1");
                     while(!Comm.checkActionCompleted());
                 }
+                Calibration.addTurnCount();
                 break;
             case Left:
                 ori=ori.getLeft();
@@ -70,6 +84,7 @@ public class Robot {
                     Comm.sendToRobot("2,90,0");
                     while(!Comm.checkActionCompleted());
                 }
+                Calibration.addTurnCount();
                 break;
         }
         if(!(Algorithm.isSimulating || virtual)) {
@@ -109,6 +124,20 @@ public class Robot {
     public void setVirtual(boolean v){
     	virtual=true;
     }
+    public void setRunShortestPath(boolean sp){
+    	runShortestPath=sp;
+    	if(sp==true && shortestPath==null)
+    		shortestPath=new LinkedList<Vector>();
+    }
+    public boolean isRunShortestPath(){
+    	return runShortestPath;
+    }
+    public boolean onShortestPath(Vector v){
+    	for(Vector vt:shortestPath)
+    		if(vt.equals(v))
+    			return true;
+    	return false;
+    }
     public Direction getDefaultOri(){
     	if(pos.y==1 && (pos.x<Map.MAX_X-2))
 			return Direction.East;
@@ -120,20 +149,27 @@ public class Robot {
 			return Direction.South;
     	return ori;
     }
-    
-//    public boolean getSimulation() {
-//    	return isSimulating;
-//    }
-    public void restart(){
-    		ori=Direction.East;
-    		pos=new Vector(Algorithm.startPoint.x,Algorithm.startPoint.y);
-    		map=new Map();    		
+    public int getFrequency(Vector v){
+    	int count=0;
+    	for(Vector vt:history)
+    		if(vt.equals(v))
+    			count++;
+    	return count;
     }
-    
+    public void restart(){
+    		pos=new Vector(Algorithm.startPoint.x,Algorithm.startPoint.y);
+    		ori=getDefaultOri();
+    }
+    public void explorationFinished() {
+    	Direction target=getDefaultOri();
+    	while(ori!=target)
+    		execute(RobotAction.Left);
+    }
     public void moveForwardMultiple(int n, GUI gui){
     	if(n==1){
     		execute(RobotAction.Forward);
     	    gui.getGridPanel().getGridContainer().drawGrid(map, this);
+    	    return;
     	}
 
     	while(n>MAX_STEP){
@@ -178,7 +214,7 @@ public class Robot {
     public void updateGUI(int steps, GUI gui){
     	for(int i=0;i<steps;i++){
             pos.add(ori.toVector());
-    		while(!Comm.checkArduinoMessage(String.valueOf(i)));
+    		while(!Comm.checkArduinoMessage(String.valueOf(i+1)));
             Comm.sendToAndroid("position::"+pos.x+";;"+pos.y);
             Comm.sendToAndroid("orientation::"+ori.ordinal());
     		gui.getGridPanel().getGridContainer().drawGrid(map, this);
