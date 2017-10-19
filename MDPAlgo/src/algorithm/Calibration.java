@@ -7,8 +7,8 @@ import communication.*;
 public class Calibration {
 	private static int frontCount=0;
 	private static int rightCount=0;
-	private static int turnFrontCount=0;
-	private static int turnRightCount=0;
+//	private static int turnFrontCount=0;
+//	private static int turnRightCount=0;
 	private static Robot robot;
 	private static MapLayer layer;
 	private static final int MAX_FRONTCOUNT=2;
@@ -23,7 +23,7 @@ public class Calibration {
 		if(rightCount>MAX_RIGHTCOUNT){
 			if(checkRightAlignmentPossible()){
 				if(!Algorithm.isSimulating){
-					Comm.sendToRobot("5\n");
+					Comm.sendToRobot("5");
 					int count=0;
 					do{
 						succ=Comm.checkCalibrationCompleted();
@@ -49,7 +49,7 @@ public class Calibration {
 		if(frontCount>MAX_FRONTCOUNT) {
 			if(checkFrontAlignmentPossible()){
 				if(!Algorithm.isSimulating){
-					Comm.sendToRobot("7\n");
+					Comm.sendToRobot("7");
 					int count=0;
 					do{
 						succ=Comm.checkCalibrationCompleted();

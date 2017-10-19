@@ -3,6 +3,8 @@ package algorithm;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
+
+import communication.Comm;
 import simulation.*;
 import map.Map;
 import map.Point;
@@ -21,6 +23,7 @@ public class ShortestPath {
 	private Direction currentDir;
 	private double[][] gCosts;
 	private Robot robot;
+	private Robot virtualRobot;
 	private Map map;					//explored map
 //	private Map actualMap = null;		//From simulator
 	private int loopCount;
@@ -31,11 +34,6 @@ public class ShortestPath {
 //		this.actualMap = null;
 		initObject(map,robot, explorationMode);
 	}
-//	public ShortestPath(Map map, Robot robot, Map actualMap) {
-//		this.actualMap = actualMap;
-//		this.explorationMode = false;
-//		initObject(map, robot);
-//	}
 	
 	public void initObject(Map map, Robot robot, boolean explorationMode) {
 		this.explorationMode=explorationMode;
@@ -45,9 +43,11 @@ public class ShortestPath {
 		this.closed = new ArrayList<>();
 		this.parents = new HashMap<>();
 		this.neighbours = new Point[4];
-		this.currentPoint =  map.getPointMap(robot.getPos().x, robot.getPos().y);
-		this.currentDir = robot.getOri();
 		this.gCosts = new double[Map.MAX_X][Map.MAX_Y];
+		this.virtualRobot=new Robot(robot.getMap(),robot.getOri(),robot.getPos());
+		this.currentPoint =  map.getPointMap(virtualRobot.getPos().x, virtualRobot.getPos().y);
+		this.currentDir = virtualRobot.getOri();
+		virtualRobot.setVirtual(true);
 		
 		map.updateVirtualWall();
 		
@@ -64,7 +64,7 @@ public class ShortestPath {
 		open.add(currentPoint);
 		
 		//Initialise starting point
-		gCosts[robot.getPos().x][robot.getPos().y] = 0;
+		gCosts[virtualRobot.getPos().x][virtualRobot.getPos().y] = 0;
 		this.loopCount = 0;
 	}
 	
@@ -144,7 +144,7 @@ public class ShortestPath {
 	}
 		
 	//Returns shortest path from one point to another
-	public String executeShortestPath(int goalX, int goalY, GUI gui) {
+	public ArrayList<RobotAction> findShortestPath(int goalX, int goalY, GUI gui) {
 		System.out.println("Calculating fastest path from (" + currentPoint.getPos().x + ", " + currentPoint.getPos().y + ") to (" + goalX + ", " + goalY + ")");
 		
 		Stack<Point> path;
@@ -234,109 +234,109 @@ public class ShortestPath {
 	
 	
 	//Returns movements for shortestpath
-	private String shortestPathMovements(Stack<Point> path, int goalX, int goalY, GUI gui) {
+	private ArrayList<RobotAction> shortestPathMovements(Stack<Point> path, int goalX, int goalY, GUI gui) {
 		StringBuilder movementString = new StringBuilder();
-		Robot virtualR=new Robot(robot.getMap(),robot.getOri(),robot.getPos());
-		virtualR.setVirtual(true);
+//		Robot virtualR=new Robot(robot.getMap(),robot.getOri(),robot.getPos());
+		virtualRobot.setVirtual(true);
 		Point p = path.pop();
 		Direction targetDir;
 		ArrayList<RobotAction> movement = new ArrayList<>();
 		
-		while((virtualR.getPos().x != goalX) || (virtualR.getPos().y != goalY)) {
-			if(virtualR.getPos().x == p.getPos().x && virtualR.getPos().y == p.getPos().y) {
+		while((virtualRobot.getPos().x != goalX) || (virtualRobot.getPos().y != goalY)) {
+			if(virtualRobot.getPos().x == p.getPos().x && virtualRobot.getPos().y == p.getPos().y) {
 				p = path.pop();
 			}
 			
-			targetDir = getTargetDir(virtualR.getPos().x,virtualR.getPos().y,virtualR.getOri(),p);
+			targetDir = getTargetDir(virtualRobot.getPos().x,virtualRobot.getPos().y,virtualRobot.getOri(),p);
 			
 			RobotAction ra;
 			
-			if(virtualR.getOri() != targetDir) {
-				ra = getTargetMove(virtualR.getOri(), targetDir); 
+			if(virtualRobot.getOri() != targetDir) {
+				ra = getTargetMove(virtualRobot.getOri(), targetDir); 
 			}
 			else {
 				ra = RobotAction.Forward;
 			}
-			System.out.println("Move " + ra.name() + " from (" + virtualR.getPos().x +", " + virtualR.getPos().y + ")");
-			virtualR.execute(ra);
-//			gui.getGridPanel().getGridContainer().drawGrid(map, robot);
-//			for(int i = 0; i< Map.MAX_X; i++) {
-//				for (int j = 0; j < Map.MAX_Y; j++) {
-//					System.out.println("(" + i + ", " + j + ")" + " - " + gCosts[i][j]);
-//				}
-//			}
+			System.out.println("Move " + ra.name() + " from (" + virtualRobot.getPos().x +", " + virtualRobot.getPos().y + ")");
+			virtualRobot.execute(ra);
 			movement.add(ra);
 			movementString.append(ra.name());
 		}
 		
-//		if(Algorithm.isSimulating) {
-//			for (RobotAction mm : movement) {
-//				if(mm == RobotAction.Forward) {
-//					if(!isUpFree()) {
-//						System.out.println("Early termination of shortest path execution.");
-//						return "T";
+		return movement;
+		
+	}
+	
+	public void executeMovement(ArrayList<RobotAction> movement, GUI gui){
+		if(robot.isFastestRun() && !explorationMode)
+			Comm.sendToAndroid("8,1");     //for executing fastest run
+		
+		int fCount = 0;
+		for (RobotAction mm : movement) {
+			if(mm == RobotAction.Forward) {
+				fCount++;
+			}
+			else if (mm == RobotAction.Left || mm == RobotAction.Right || mm == RobotAction.Backward) {
+				if(fCount > 0) {
+					robot.moveForwardMultiple(fCount,gui);
+//					if(!robot.isFastestRun() && explorationMode) {
+//						while(!Algorithm.scan(gui));
 //					}
-//				}
-//				
-//				robot.execute(mm);
-//				if(Algorithm.checkTimeLimitReached())
-//					return movementString.toString();
-//				//During exploration, use sensor data to update map
-//				if(explorationMode) {
-//			        while(!Algorithm.scan(gui));
-//				}
+//					if(explorationMode){
+//						gui.getGridPanel().getGridContainer().drawGrid(map, robot);
+//					}
+					fCount = 0;
+				}						
+				robot.execute(mm);
+				if(explorationMode) {
+					while(!Algorithm.scan(gui));
+				}
 //				else{
-//			        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
+//					gui.getGridPanel().getGridContainer().drawGrid(map, robot);
 //				}
+				if(explorationMode && Algorithm.checkTimeLimitReached())
+					return;
+			}
+		}
+		if(fCount > 0) {
+			robot.moveForwardMultiple(fCount,gui);
+			if(explorationMode) {
+				while(!Algorithm.scan(gui));
+			}
+//			else{
+//				gui.getGridPanel().getGridContainer().drawGrid(map, robot);
 //			}
-//		}
-//		else {
-			int fCount = 0;
+		    if(explorationMode && Algorithm.checkTimeLimitReached())
+				return;
+		}
+		
+		//for terminating message sending and update GUI according to execution
+		if(robot.isFastestRun() && !explorationMode){
+			Comm.sendToAndroid("9");
+			fCount = 0;
 			for (RobotAction mm : movement) {
 				if(mm == RobotAction.Forward) {
 					fCount++;
-//					if(fCount == 10) {
-//						robot.moveForwardMultiple(fCount);
-//						fCount = 0;
-//				        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
-//					}
 				}
 				else if (mm == RobotAction.Left || mm == RobotAction.Right || mm == RobotAction.Backward) {
-						if(fCount > 0) {
-							robot.moveForwardMultiple(fCount,gui);
-							if(explorationMode) {
-						        while(!Algorithm.scan(gui));
-							}
-							else{
-						        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
-							}
-							fCount = 0;
-						}						
-						robot.execute(mm);
-						if(explorationMode) {
-					        while(!Algorithm.scan(gui));
-						}
-						else{
-							gui.getGridPanel().getGridContainer().drawGrid(map, robot);
-						}
-				        if(Algorithm.checkTimeLimitReached())
-							return movementString.toString();
-					}
-				}
-			if(fCount > 0) {
-				robot.moveForwardMultiple(fCount,gui);
-				if(explorationMode) {
-			        while(!Algorithm.scan(gui));
-				}
-				else{
+					if(fCount > 0) {
+						robot.updateGUI(fCount, gui);
+						while(!Comm.checkActionCompleted());
+						fCount = 0;
+					}						
+					while(!Comm.checkActionCompleted());
+					robot.setOriByTurn(mm);
 					gui.getGridPanel().getGridContainer().drawGrid(map, robot);
 				}
-		        if(Algorithm.checkTimeLimitReached())
-					return movementString.toString();
 			}
-//		}
-		System.out.println("\nMovements: " + movementString.toString());
-		return movementString.toString();
+			if(fCount > 0) {
+				robot.updateGUI(fCount,gui);
+				while(!Comm.checkActionCompleted());
+			}
+		}
+		
+		System.out.println("\nMovements: " + movement.toString());
+		return;
 	}
 	
 
@@ -433,6 +433,13 @@ public class ShortestPath {
 			}
 			System.out.println("\n");
 		}
+	}
+	
+	public void updateVirtualRobot(Robot r){
+		this.virtualRobot=new Robot(robot.getMap(),robot.getOri(),robot.getPos());
+		this.currentPoint =  map.getPointMap(virtualRobot.getPos().x, virtualRobot.getPos().y);
+		this.currentDir = virtualRobot.getOri();
+		virtualRobot.setVirtual(true);
 	}
 
 }

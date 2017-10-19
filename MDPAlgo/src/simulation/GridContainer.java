@@ -92,7 +92,7 @@ public class GridContainer extends JPanel{
 		return false;
 	}
 	public boolean onShortestPath(Vector cur,Robot r){
-		if(r.isRunShortestPath())
+		if(r.isFastestRun())
 			if(r.onShortestPath(cur))
 				return true;
 		return false;

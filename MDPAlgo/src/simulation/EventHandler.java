@@ -7,6 +7,9 @@ import algorithm.*;
 import communication.Comm;
 import robot.*;
 import map.*;
+
+import java.util.ArrayList;
+
 import javax.swing.SwingWorker;
 
 /**
@@ -56,7 +59,7 @@ public class EventHandler {
     }
     public void shortestPath(Robot r, Map m, String time, String speed, boolean isSimulating){
     	int stepPerSecond, timeLimit;
-    	r.setRunShortestPath(true);
+    	r.setFastestRun(true);
     	if(GUI.explored)
     		sp=new ShortestPath(r.getMap(),r, false);
     	else
@@ -88,12 +91,17 @@ public class EventHandler {
     	shortestPath=new SwingWorker<Integer,Integer>(){
     		@Override
     		public Integer doInBackground(){
+    			ArrayList<RobotAction> movement=new ArrayList<RobotAction>();
+    			ArrayList<RobotAction> temp=new ArrayList<RobotAction>();
     			if(Algorithm.wayPoint!=null) {
-    				sp.executeShortestPath(Algorithm.wayPoint.x, Algorithm.wayPoint.y, gui);
+    				movement=sp.findShortestPath(Algorithm.wayPoint.x, Algorithm.wayPoint.y, gui);
     			}
-    	    	r.setRunShortestPath(true);
-    			sp=new ShortestPath(GUI.explored?r.getMap():m,r,false);
-    			sp.executeShortestPath(Algorithm.endPoint.x, Algorithm.endPoint.y, gui);
+    	    	r.setFastestRun(true);
+//    			sp=new ShortestPath(GUI.explored?r.getMap():m,r,false);
+    			temp=sp.findShortestPath(Algorithm.endPoint.x, Algorithm.endPoint.y, gui);
+    			movement.addAll(temp);
+    			if(!movement.isEmpty())
+    				sp.executeMovement(movement, gui);
     			return 0;
     		}
     	};

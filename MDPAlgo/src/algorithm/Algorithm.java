@@ -77,6 +77,7 @@ public class Algorithm {
         simplifyActionEnabled=false;
         ArrayList<Vector> unknown;
         ArrayList<Vector> unreachable=new ArrayList<Vector>();
+        ArrayList<RobotAction> movement;
         do{
 	        	
         	unknown = getRemainedPoint();
@@ -85,9 +86,11 @@ public class Algorithm {
         		break;
         	Vector goal=findNearestExploredPoint(unknown);
             sp = new ShortestPath(map, robot, true);
-	        if(sp.executeShortestPath(goal.x, goal.y, gui)==null)
+            movement=sp.findShortestPath(goal.x, goal.y, gui);
+	        if(movement==null)
 	        	unreachable.add(goal);
 	        else {
+	        	sp.executeMovement(movement, gui);
 	        	alignToObstacle(gui);
 	        	Calibration.forceCalibration(robot, mapLayer);
 	            do{
@@ -103,7 +106,7 @@ public class Algorithm {
         if(checkTimeLimitReached() || checkCovLimitReached(covLimit))
         	return;
         ShortestPath sp1 = new ShortestPath(map, robot, true);
-        sp1.executeShortestPath(startPoint.x, startPoint.x, gui);
+        sp1.executeMovement(sp1.findShortestPath(startPoint.x, startPoint.x, gui), gui);
         robot.explorationFinished();
         System.out.println("exploration finished");
 //        for(Vector v:robot.getHistory())
