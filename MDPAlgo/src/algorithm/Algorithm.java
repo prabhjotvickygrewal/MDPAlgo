@@ -23,9 +23,10 @@ public class Algorithm {
     public static boolean isSimulating;
     public static boolean androidEnabled=false;
     public static boolean simplifyActionEnabled=false;
+    public static boolean reduceScanningEnabled=false;
     public static Vector startPoint=new Vector(1,1);
     public static Vector endPoint=new Vector(13,18);
-    public static Vector wayPoint;
+    public static Vector wayPoint = new Vector(5,8);
     public Algorithm(Simulator simulator, boolean isSimulating){
         robot=new Robot();
         map=robot.getMap();
@@ -67,6 +68,12 @@ public class Algorithm {
         
         if(checkTimeLimitReached() || checkCovLimitReached(covLimit))
         	return;
+        if(reachStartZone() && !exploreComplete()) {
+        	robot.explorationFinished();
+        	robot.calibrate();
+            gui.getGridPanel().getGridContainer().drawGrid(map, robot);
+        }
+        
         simplifyActionEnabled=false;
         ArrayList<Vector> unknown;
         ArrayList<Vector> unreachable=new ArrayList<Vector>();
@@ -82,6 +89,7 @@ public class Algorithm {
 	        	unreachable.add(goal);
 	        else {
 	        	alignToObstacle(gui);
+	        	Calibration.forceCalibration(robot, mapLayer);
 	            do{
 	                while(!scan(gui));
 	                if(exploreComplete())
@@ -98,11 +106,16 @@ public class Algorithm {
         sp1.executeShortestPath(startPoint.x, startPoint.x, gui);
         robot.explorationFinished();
         System.out.println("exploration finished");
+//        for(Vector v:robot.getHistory())
+//        	System.out.print(v);
+        robot.calibrate();
+        gui.getGridPanel().getGridContainer().drawGrid(map, robot);
+        
     }
     public void followRightObstacle(GUI gui){
     	if(robot.getFrequency(robot.getPos())>2)
 			simplifyActionEnabled=false;
-    	if(simplifyActionEnabled){
+    	if(simplifyActionEnabled && isOnEdge() && isRightFree()){
 	    	if(simplifyAction(gui))
 	    		return;
     	}
@@ -144,6 +157,7 @@ public class Algorithm {
     	}
     	
         mapLayer.processSensorData(s, robot);
+        mapLayer.markVisitedPointFree(robot.getHistory());
 
 //        map.printMap();
         if(!isSimulating){
@@ -155,7 +169,9 @@ public class Algorithm {
         return true;
         
     }
-    
+//    public boolean checkScanRequired() {
+//    	mapLayer
+//    }
     public boolean simplifyAction(GUI gui){
 //    	if(isUpAreaExplored()){
 //    		robot.execute(RobotAction.Left);
@@ -186,6 +202,9 @@ public class Algorithm {
     	}
     	return false;
     }
+    public boolean isOnEdge() {
+    	return (robot.getPos().x==1 || robot.getPos().x==13 || robot.getPos().y==1 || robot.getPos().y==13);
+    }
     public void alignToObstacle(GUI gui){
     	int count=0;
     	while(isRightFree() && count<4){
@@ -209,9 +228,17 @@ public class Algorithm {
     	Vector upVector=robot.getOri().toVector();
     	Vector leftVector=robot.getOri().getLeft().toVector();
     	Vector downVector=robot.getOri().getDown().toVector();
-    	Vector origin=robot.getPos().nAdd(downVector).nAdd(leftVector.nMultiply(2));
+    	Vector origin=robot.getPos().nAdd(downVector.nMultiply(2)).nAdd(leftVector.nMultiply(2));
     	int x=0;
     	int y=0;
+    	if(origin.x==-1)
+    		origin.x=0;
+    	if(origin.x==Map.MAX_X)
+    		origin.x=Map.MAX_X-1;
+    	if(origin.y==-1)
+    		origin.y=0;
+    	if(origin.y==Map.MAX_Y)
+    		origin.y=Map.MAX_Y-1;
     	while(mapLayer.checkInsideBoundary(origin.nAdd(rightVector.nMultiply(x)))) {
     		if(mapLayer.checkIsUnknown(origin.nAdd(rightVector.nMultiply(x))))
     			return false;

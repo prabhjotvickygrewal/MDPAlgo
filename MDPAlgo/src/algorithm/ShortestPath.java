@@ -125,7 +125,7 @@ public class ShortestPath {
 	
 	//Returns turning cost of specified turn
 	private Double getTurningCost(Direction i, Direction j) {
-		double turnCost = 20;
+		double turnCost = 10;
 		int numOfTurns = Math.abs(i.ordinal() - j.ordinal());
 		if (numOfTurns > 2)
 			numOfTurns = numOfTurns % 2;

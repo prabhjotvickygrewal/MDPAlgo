@@ -19,6 +19,7 @@ public class Comm {
     
     public Comm(){
         try{
+//            socket=new Socket(InetAddress.getByName("127.0.0.1/), 12345);
             socket=new Socket(InetAddress.getByName("192.168.13.1"), 12345);
 //            out=new OutputStreamWriter(socket.getOutputStream());
             out=new OutputStreamWriter(socket.getOutputStream());
@@ -86,7 +87,7 @@ public class Comm {
     	try{
     		String s=in.readLine();
     		System.out.println(s);
-    		return (s.equals("1") || s.equals("1\n") || s.equals("1\r\n"));
+    		return (s.equals("-2") || s.equals("-2\n") || s.equals("-2\r\n"));
     	}
     	catch(IOException e){
     		e.printStackTrace();

@@ -1,6 +1,7 @@
 
 package robot;
 import communication.Comm;
+import algorithm.*;
 import map.*;
 import algorithm.Algorithm;
 import algorithm.Calibration;
@@ -46,14 +47,14 @@ public class Robot {
             case Forward:
             	if(runShortestPath)
                 	shortestPath.add(new Vector(pos.x,pos.y));
+            	if(!virtual)
+                	history.add(new Vector(pos.x,pos.y));
                 pos.add(ori.toVector());
                 if(!(Algorithm.isSimulating || virtual)){
                     Comm.sendToRobot("1,1");
                     while(!Comm.checkActionCompleted());
                 }
-                if(!virtual)
-                	history.add(new Vector(pos.x,pos.y));
-                Calibration.addMoveCount();
+                Calibration.addCount();
                 break;
             case Backward:
 //            	if(runShortestPath)
@@ -68,7 +69,9 @@ public class Robot {
                 }
 //                if(!virtual)
 //                	history.add(new Vector(pos.x,pos.y));
-                Calibration.addTurnCount();
+                Calibration.addCount();
+
+
                 break;
             case Right:
                 ori=ori.getRight();
@@ -76,7 +79,8 @@ public class Robot {
                     Comm.sendToRobot("2,90,1");
                     while(!Comm.checkActionCompleted());
                 }
-                Calibration.addTurnCount();
+                Calibration.addCount();
+
                 break;
             case Left:
                 ori=ori.getLeft();
@@ -84,7 +88,9 @@ public class Robot {
                     Comm.sendToRobot("2,90,0");
                     while(!Comm.checkActionCompleted());
                 }
-                Calibration.addTurnCount();
+                Calibration.addCount();
+
+
                 break;
         }
         if(!(Algorithm.isSimulating || virtual)) {
@@ -156,6 +162,9 @@ public class Robot {
     			count++;
     	return count;
     }
+    public LinkedList<Vector> getHistory(){
+    	return history;
+    }
     public void restart(){
     		pos=new Vector(Algorithm.startPoint.x,Algorithm.startPoint.y);
     		ori=getDefaultOri();
@@ -164,6 +173,27 @@ public class Robot {
     	Direction target=getDefaultOri();
     	while(ori!=target)
     		execute(RobotAction.Left);
+    }
+    public void calibrate() {
+    	boolean succ;
+    	execute(RobotAction.Backward);
+    	Comm.sendToRobot("7\n");
+		int count=0;
+		do{
+			succ=Comm.checkCalibrationCompleted();
+			count++;
+			if(count>3)
+				break;
+		}while(succ!=true);
+    	execute(RobotAction.Backward);
+    	Comm.sendToRobot("7\n");
+		count=0;
+		do{
+			succ=Comm.checkCalibrationCompleted();
+			count++;
+			if(count>3)
+				break;
+		}while(succ!=true);
     }
     public void moveForwardMultiple(int n, GUI gui){
     	if(n==1){
@@ -213,6 +243,8 @@ public class Robot {
     
     public void updateGUI(int steps, GUI gui){
     	for(int i=0;i<steps;i++){
+    		if(runShortestPath)
+    			shortestPath.add(pos);
             pos.add(ori.toVector());
     		while(!Comm.checkArduinoMessage(String.valueOf(i+1)));
             Comm.sendToAndroid("position::"+pos.x+";;"+pos.y);

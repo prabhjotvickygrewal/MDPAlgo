@@ -5,19 +5,22 @@ import map.*;
 import communication.*;
 
 public class Calibration {
-	private static int moveCount=0;
-	private static int turnCount=0;
+	private static int frontCount=0;
+	private static int rightCount=0;
+	private static int turnFrontCount=0;
+	private static int turnRightCount=0;
 	private static Robot robot;
 	private static MapLayer layer;
-	private static final int MAX_MOVECOUNT=4;
-	private static final int MAX_TURNCOUNT=2;
+	private static final int MAX_FRONTCOUNT=2;
+	private static final int MAX_RIGHTCOUNT=4;
+//	private static final int MAX_RIGHTCOUNT=4;
 
 	
 	public static void calibrate(Robot r, MapLayer m){
 		robot=r;
 		layer=m;
 		boolean succ=false;
-		if(moveCount>MAX_MOVECOUNT || turnCount>MAX_TURNCOUNT){
+		if(rightCount>MAX_RIGHTCOUNT){
 			if(checkRightAlignmentPossible()){
 				if(!Algorithm.isSimulating){
 					Comm.sendToRobot("5\n");
@@ -25,7 +28,7 @@ public class Calibration {
 					do{
 						succ=Comm.checkCalibrationCompleted();
 						count++;
-						if(count>5)
+						if(count>3)
 							break;
 					}while(succ!=true);
 				}
@@ -38,15 +41,20 @@ public class Calibration {
 			        }
 			        succ=true;
 				}
+				if(succ) 
+					rightCount=0;
+				
 			}
-			else if(checkFrontAlignmentPossible()){
+		}
+		if(frontCount>MAX_FRONTCOUNT) {
+			if(checkFrontAlignmentPossible()){
 				if(!Algorithm.isSimulating){
 					Comm.sendToRobot("7\n");
 					int count=0;
 					do{
 						succ=Comm.checkCalibrationCompleted();
 						count++;
-						if(count>5)
+						if(count>3)
 							break;
 					}while(succ!=true);			
 				}
@@ -59,20 +67,33 @@ public class Calibration {
 			        }
 			        succ=true;
 				}
-			}
-			if(succ){
-					moveCount=0;
-					turnCount=0;
+				if(succ)
+					frontCount=0;
 			}
 		}
+//			if(succ){
+//					if(rightCount>MAX_COUNT)
+//						rightCount=0;
+//					else
+//						frontCount=0;
+//			}
+		
 	}
-	public static void addMoveCount(){
-		moveCount++;
+	public static void addfrontCount(){
+		frontCount++;
 	}
-	public static void addTurnCount(){
-		turnCount++;
+	public static void addrightCount(){
+		rightCount++;
 	}
-	
+	public static void addCount() {
+		frontCount++;
+		rightCount++;
+	}
+	public static void forceCalibration(Robot r,MapLayer m) {
+		frontCount=5;
+		rightCount=5;
+		calibrate(r,m);
+	}
     public static boolean checkRightAlignmentPossible(){
     	Vector pos=robot.getPos();
     	Direction ori=robot.getOri();

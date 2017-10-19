@@ -99,6 +99,8 @@ public class SensorData {
     public int getBlockDistance(int temp){
     	if(temp==-99)
     		return 0;
+    	if(temp<0)
+    		return 1;
         if(temp%10<5)
             return temp/10+1;
         else

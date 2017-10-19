@@ -3,6 +3,7 @@ package algorithm;
 import map.*;
 import robot.*;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 /**
  *
@@ -12,7 +13,7 @@ public class MapLayer {
     private Map map;
     private PointState[][] states;
     public static final int Sensor_ShortRange=3;
-    public static final int Sensor_LongRange=7;
+    public static final int Sensor_LongRange=6;
 
     public MapLayer(Map map){
         this.map=map;
@@ -89,7 +90,22 @@ public class MapLayer {
         else
             for(int i=1;i<=Sensor_ShortRange;i++)
                 setStateAt(pos.nAdd(upVector.nMultiply(i+1)).nAdd(rightVector), PointState.IsFree);
+        markVisitedPointFree(r.getHistory());
         map.updatePointMap(states);
+    }
+    
+    public void markVisitedPointFree(LinkedList<Vector> history) {
+    	for(Vector v:history) {
+    		for(int i=-1;i<=1;i++)
+    			for(int j=-1;i<=1;i++) {
+    				setStateAt(new Vector(v.x+i,v.y+j),PointState.IsFree);
+    			}
+    	}
+    	for(int i=-1;i<=1;i++)
+			for(int j=-1;i<=1;i++) {
+				setStateAt(new Vector(Algorithm.startPoint.x+i,Algorithm.startPoint.y+j),PointState.IsFree);
+				setStateAt(new Vector(Algorithm.endPoint.x+i,Algorithm.endPoint.y+j),PointState.IsFree);
+			}
     }
 //    public LinkedList<Vector> getRemainedPoint(Vector pos){
 //        LinkedList<Vector> remainedPoint=new LinkedList<>();
@@ -139,6 +155,30 @@ public class MapLayer {
     			if(states[i][j]==PointState.Unknown)
     				remained.add(new Vector(i,j));
     	return remained;
+    }
+    public boolean checkScanRequired(Vector v, Direction ori) {
+    	Vector rightVector=ori.getRight().toVector();
+        Vector leftVector=ori.getLeft().toVector();
+        Vector downVector=ori.getDown().toVector();
+        boolean up_l=checkIsExplored(v.nAdd(ori.toVector()).nAdd(leftVector),ori,Sensor_ShortRange);
+        boolean up_m=checkIsExplored(v.nAdd(ori.toVector()),ori,Sensor_ShortRange);
+        boolean up_r=checkIsExplored(v.nAdd(ori.toVector()).nAdd(rightVector),ori,Sensor_ShortRange);
+        boolean right_t=checkIsExplored(v.nAdd(rightVector).nAdd(ori.toVector()),ori.getRight(),Sensor_ShortRange);
+        boolean right_b=checkIsExplored(v.nAdd(rightVector).nAdd(downVector),ori.getRight(),Sensor_ShortRange);
+        boolean left_t=checkIsExplored(v.nAdd(leftVector).nAdd(ori.toVector()),ori.getLeft(),Sensor_LongRange);
+        return !(up_l && up_m && up_r && right_t && right_b && left_t);
+    }
+    public boolean checkIsExplored(Vector v,Direction dir,int range) {
+    	Vector addVector=dir.toVector();
+    	Vector cur;
+    	for(int i=0;i<range;i++) {
+    		cur=v.nAdd(addVector.nMultiply(i+1));
+    		if(checkIsObstacle(cur))
+    			return true;
+    		if(checkIsUnknown(cur))
+    			return false;
+    	}
+    	return true;
     }
     public boolean checkExplorable(Vector v){
     	 boolean isUpperBlocked=!checkIsBlockFree(v.nAdd(new Vector(0,2)));
