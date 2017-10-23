@@ -64,12 +64,12 @@ public class Algorithm {
             	break;
             Calibration.calibrate(robot, mapLayer);
             followRightObstacle(gui);
-        }while(!checkTimeLimitReached() && !checkCovLimitReached(covLimit) && !reachStartZone());
+        }while(!checkTimeLimitReached() && !checkCovLimitReached(covLimit) && !(reachStartZone() && reachGoalZone()));
         gui.getGridPanel().getGridContainer().drawGrid(map, robot);
         
         if(checkTimeLimitReached() || checkCovLimitReached(covLimit))
         	return;
-        if(reachStartZone() && !exploreComplete()) {
+        if(reachStartZone() && exploreComplete()) {
         	robot.explorationFinished();
             Calibration.afterExploration(robot);
             gui.getGridPanel().getGridContainer().drawGrid(map, robot);
@@ -363,6 +363,10 @@ public class Algorithm {
     public boolean exploreComplete(){
         return mapLayer.checkCovLimitReached(100);
     }
+    public boolean reachGoalZone() {
+    	return !mapLayer.checkIsUnknown(endPoint);
+    }
+    
 //    public boolean isRightFree(){
 //        Vector rightVector=robot.getOri().getRight().toVector();
 //        Vector upVector=robot.getOri().toVector();
