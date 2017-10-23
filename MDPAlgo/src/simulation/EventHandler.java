@@ -97,7 +97,11 @@ public class EventHandler {
     				movement=sp.findShortestPath(Algorithm.wayPoint.x, Algorithm.wayPoint.y, gui);
     			}
     	    	r.setFastestRun(true);
-//    			sp=new ShortestPath(GUI.explored?r.getMap():m,r,false);
+    	    	Robot prev=sp.getVirtualRobot();
+    	    	
+    			sp=new ShortestPath(GUI.explored?r.getMap():m,r,false);
+    			sp.updateVirtualRobot(prev);
+    			
     			temp=sp.findShortestPath(Algorithm.endPoint.x, Algorithm.endPoint.y, gui);
     			movement.addAll(temp);
     			if(!movement.isEmpty())

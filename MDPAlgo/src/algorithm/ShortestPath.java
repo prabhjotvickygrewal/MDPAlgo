@@ -252,7 +252,7 @@ public class ShortestPath {
 			RobotAction ra;
 			
 			if(virtualRobot.getOri() != targetDir) {
-				ra = getTargetMove(virtualRobot.getOri(), targetDir); 
+				ra = virtualRobot.getTargetMove(targetDir); 
 			}
 			else {
 				ra = RobotAction.Forward;
@@ -268,8 +268,8 @@ public class ShortestPath {
 	}
 	
 	public void executeMovement(ArrayList<RobotAction> movement, GUI gui){
-		if(robot.isFastestRun() && !explorationMode)
-			Comm.sendToAndroid("8,1");     //for executing fastest run
+		if(!Algorithm.isSimulating && robot.isFastestRun() && !explorationMode)
+			Comm.sendToRobot("8,1");     //for executing fastest run
 		
 		int fCount = 0;
 		for (RobotAction mm : movement) {
@@ -279,17 +279,16 @@ public class ShortestPath {
 			else if (mm == RobotAction.Left || mm == RobotAction.Right || mm == RobotAction.Backward) {
 				if(fCount > 0) {
 					robot.moveForwardMultiple(fCount,gui);
-//					if(!robot.isFastestRun() && explorationMode) {
+					if(!robot.isFastestRun() && explorationMode) {
 //						while(!Algorithm.scan(gui));
-//					}
-//					if(explorationMode){
-//						gui.getGridPanel().getGridContainer().drawGrid(map, robot);
-//					}
+						Calibration.forceCalibration();
+						gui.getGridPanel().getGridContainer().drawGrid(map, robot);
+					}
 					fCount = 0;
 				}						
 				robot.execute(mm);
 				if(explorationMode) {
-					while(!Algorithm.scan(gui));
+					gui.getGridPanel().getGridContainer().drawGrid(map, robot);
 				}
 //				else{
 //					gui.getGridPanel().getGridContainer().drawGrid(map, robot);
@@ -306,13 +305,14 @@ public class ShortestPath {
 //			else{
 //				gui.getGridPanel().getGridContainer().drawGrid(map, robot);
 //			}
-		    if(explorationMode && Algorithm.checkTimeLimitReached())
-				return;
+//		    if(explorationMode && Algorithm.checkTimeLimitReached())
+//				return;
 		}
 		
 		//for terminating message sending and update GUI according to execution
 		if(robot.isFastestRun() && !explorationMode){
-			Comm.sendToAndroid("9");
+			if(!Algorithm.isSimulating)
+				Comm.sendToAndroid("9");
 			fCount = 0;
 			for (RobotAction mm : movement) {
 				if(mm == RobotAction.Forward) {
@@ -321,17 +321,20 @@ public class ShortestPath {
 				else if (mm == RobotAction.Left || mm == RobotAction.Right || mm == RobotAction.Backward) {
 					if(fCount > 0) {
 						robot.updateGUI(fCount, gui);
-						while(!Comm.checkActionCompleted());
+						if(!Algorithm.isSimulating)
+							while(!Comm.checkActionCompleted());
 						fCount = 0;
 					}						
-					while(!Comm.checkActionCompleted());
+					if(!Algorithm.isSimulating)
+						while(!Comm.checkActionCompleted());
 					robot.setOriByTurn(mm);
 					gui.getGridPanel().getGridContainer().drawGrid(map, robot);
 				}
 			}
 			if(fCount > 0) {
 				robot.updateGUI(fCount,gui);
-				while(!Comm.checkActionCompleted());
+				if(!Algorithm.isSimulating)
+					while(!Comm.checkActionCompleted());
 			}
 		}
 		
@@ -353,58 +356,58 @@ public class ShortestPath {
             return false;
     }
 	//Returns the movements to execute to get from one direction to another
-	private RobotAction getTargetMove(Direction a, Direction b) {
-		switch(a) {
-		case North:
-			switch(b) {
-			case North:
-				return RobotAction.Error;
-			case South:
-				return RobotAction.Backward;
-			case West:
-				return RobotAction.Left;
-			case East:
-				return RobotAction.Right;
-			}
-			break;
-		case South:
-			switch(b) {
-			case North:
-				return RobotAction.Backward;
-			case South:
-				return RobotAction.Error;
-			case West:
-				return RobotAction.Right;
-			case East:
-				return RobotAction.Left;
-			}
-			break;
-		case West:
-			switch(b) {
-			case North:
-				return RobotAction.Right;
-			case South:
-				return RobotAction.Left;
-			case West:
-				return RobotAction.Error;
-			case East:
-				return RobotAction.Backward;
-			}
-			break;
-		case East:
-			switch(b) {
-			case North:
-				return RobotAction.Left;
-			case South:
-				return RobotAction.Right;
-			case West:
-				return RobotAction.Backward;
-			case East:
-				return RobotAction.Error;
-			}
-		}
-		return RobotAction.Error;
-	}
+//	private RobotAction getTargetMove(Direction a, Direction b) {
+//		switch(a) {
+//		case North:
+//			switch(b) {
+//			case North:
+//				return RobotAction.Error;
+//			case South:
+//				return RobotAction.Backward;
+//			case West:
+//				return RobotAction.Left;
+//			case East:
+//				return RobotAction.Right;
+//			}
+//			break;
+//		case South:
+//			switch(b) {
+//			case North:
+//				return RobotAction.Backward;
+//			case South:
+//				return RobotAction.Error;
+//			case West:
+//				return RobotAction.Right;
+//			case East:
+//				return RobotAction.Left;
+//			}
+//			break;
+//		case West:
+//			switch(b) {
+//			case North:
+//				return RobotAction.Right;
+//			case South:
+//				return RobotAction.Left;
+//			case West:
+//				return RobotAction.Error;
+//			case East:
+//				return RobotAction.Backward;
+//			}
+//			break;
+//		case East:
+//			switch(b) {
+//			case North:
+//				return RobotAction.Left;
+//			case South:
+//				return RobotAction.Right;
+//			case West:
+//				return RobotAction.Backward;
+//			case East:
+//				return RobotAction.Error;
+//			}
+//		}
+//		return RobotAction.Error;
+//	}
 	
 	//Prints the shortest path from stack
 	private void printShortestPath(Stack<Point> path) {
@@ -436,10 +439,16 @@ public class ShortestPath {
 	}
 	
 	public void updateVirtualRobot(Robot r){
-		this.virtualRobot=new Robot(robot.getMap(),robot.getOri(),robot.getPos());
+		this.virtualRobot=new Robot(r.getMap(),r.getOri(),r.getPos());
 		this.currentPoint =  map.getPointMap(virtualRobot.getPos().x, virtualRobot.getPos().y);
 		this.currentDir = virtualRobot.getOri();
 		virtualRobot.setVirtual(true);
+		open.remove(0);
+		open.add(currentPoint);
+	}
+	
+	public Robot getVirtualRobot() {
+		return virtualRobot;
 	}
 
 }

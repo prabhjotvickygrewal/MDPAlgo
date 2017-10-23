@@ -12,7 +12,7 @@ public class Calibration {
 	private static Robot robot;
 	private static MapLayer layer;
 	private static final int MAX_FRONTCOUNT=2;
-	private static final int MAX_RIGHTCOUNT=4;
+	private static final int MAX_RIGHTCOUNT=3;
 //	private static final int MAX_RIGHTCOUNT=4;
 
 	
@@ -79,6 +79,12 @@ public class Calibration {
 //			}
 		
 	}
+	public static void calibrate(){
+		if(robot!=null && layer!=null)
+			calibrate(robot, layer);
+		else
+			System.out.println("Calibration failed");
+	}
 	public static void addfrontCount(){
 		frontCount++;
 	}
@@ -89,10 +95,35 @@ public class Calibration {
 		frontCount++;
 		rightCount++;
 	}
-	public static void forceCalibration(Robot r,MapLayer m) {
+	public static void forceCalibration() {
 		frontCount=5;
 		rightCount=5;
-		calibrate(r,m);
+		calibrate();
+	}
+	public static void afterExploration(Robot robot){
+		if(!Algorithm.isSimulating){
+    	boolean succ;
+    	robot.execute(RobotAction.Backward);
+    	Comm.sendToRobot("7\n");
+		int count=0;
+		do{
+			succ=Comm.checkCalibrationCompleted();
+			count++;
+			if(count>3)
+				break;
+		}while(succ!=true);
+    	robot.execute(RobotAction.Backward);
+    	Comm.sendToRobot("7\n");
+		count=0;
+		do{
+			succ=Comm.checkCalibrationCompleted();
+			count++;
+			if(count>3)
+				break;
+		}while(succ!=true);
+		}
+		frontCount=0;
+		rightCount=0;
 	}
     public static boolean checkRightAlignmentPossible(){
     	Vector pos=robot.getPos();

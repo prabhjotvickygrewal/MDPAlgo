@@ -17,7 +17,7 @@ import java.util.LinkedList;
 public class Robot {
 	public static final int MAX_STEP=20;
 	public static int delay=300;
-    private static boolean fastestRun=false;
+    private boolean fastestRun=false;
 	private boolean virtual=false;
     private Map map;
     private Direction ori;
@@ -45,49 +45,55 @@ public class Robot {
     public void execute(RobotAction action){
         switch(action){
             case Forward:
-//            	if(fastestRun)
-//                	shortestPath.add(new Vector(pos.x,pos.y));
-            	if(!virtual)
-                	history.add(new Vector(pos.x,pos.y));
+            	if(!virtual){
+	            	if(fastestRun)
+	                	shortestPath.add(new Vector(pos.x,pos.y));
+	                history.add(new Vector(pos.x,pos.y));
+	                if(!(Algorithm.isSimulating || virtual)){
+	                    Comm.sendToRobot("1,1");
+	                    if(!fastestRun)
+	                    	while(!Comm.checkActionCompleted());
+	                }
+	                Calibration.addCount();
+            	}
             	if(!fastestRun)
             		pos.add(ori.toVector());
-                if(!(Algorithm.isSimulating || virtual)){
-                    Comm.sendToRobot("1,1");
-                    if(!fastestRun)
-                    	while(!Comm.checkActionCompleted());
-                }
-                Calibration.addCount();
                 break;
             case Backward:
             	if(!fastestRun)
             		ori=ori.getDown();
-                if(!(Algorithm.isSimulating || virtual)){
-                    Comm.sendToRobot("2,180,1");
-                    if(!fastestRun)
-                    	while(!Comm.checkActionCompleted());
-                }
-                Calibration.addCount();
+            	if(!virtual){
+	                if(!(Algorithm.isSimulating || virtual)){
+	                    Comm.sendToRobot("2,180,1");
+	                    if(!fastestRun)
+	                    	while(!Comm.checkActionCompleted());
+	                }
+	                Calibration.addCount();
+            	}
                 break;
             case Right:
             	if(!fastestRun)
             		ori=ori.getRight();
-                if(!(Algorithm.isSimulating || virtual)){
-                    Comm.sendToRobot("2,90,1");
-                    if(!fastestRun)
-                    	while(!Comm.checkActionCompleted());
+                if(!virtual){
+	                if(!(Algorithm.isSimulating || virtual)){
+	                    Comm.sendToRobot("2,90,1");
+	                    if(!fastestRun)
+	                    	while(!Comm.checkActionCompleted());
+	                }
+	                Calibration.addCount();
                 }
-                Calibration.addCount();
-
                 break;
             case Left:
             	if(!fastestRun)
             		ori=ori.getLeft();
-                if(!(Algorithm.isSimulating || virtual)){
-                    Comm.sendToRobot("2,90,0");
-                    if(!fastestRun)
-                    	while(!Comm.checkActionCompleted());
+                if(!virtual){
+	                if(!(Algorithm.isSimulating || virtual)){
+	                    Comm.sendToRobot("2,90,0");
+	                    if(!fastestRun)
+	                    	while(!Comm.checkActionCompleted());
+	                }
+	                Calibration.addCount();
                 }
-                Calibration.addCount();
                 break;
         }
         if(!(Algorithm.isSimulating || virtual)) {
@@ -95,7 +101,7 @@ public class Robot {
 	        Comm.sendToAndroid("orientation::"+ori.ordinal());
         }
         else{
-        	if(!virtual){
+        	if(!virtual && !fastestRun){
 	        	try {
 		            Thread.sleep(delay);                 //1000 milliseconds is one second.
 		        } catch(InterruptedException ex) {
@@ -181,30 +187,29 @@ public class Robot {
     }
     public void explorationFinished() {
     	Direction target=getDefaultOri();
-    	while(ori!=target)
-    		execute(RobotAction.Left);
+    	execute(getTargetMove(target));
     }
-    public void calibrate() {
-    	boolean succ;
-    	execute(RobotAction.Backward);
-    	Comm.sendToRobot("7");
-		int count=0;
-		do{
-			succ=Comm.checkCalibrationCompleted();
-			count++;
-			if(count>3)
-				break;
-		}while(succ!=true);
-    	execute(RobotAction.Backward);
-    	Comm.sendToRobot("7");
-		count=0;
-		do{
-			succ=Comm.checkCalibrationCompleted();
-			count++;
-			if(count>3)
-				break;
-		}while(succ!=true);
-    }
+//    public void calibrate() {
+//    	boolean succ;
+//    	execute(RobotAction.Backward);
+//    	Comm.sendToRobot("7");
+//		int count=0;
+//		do{
+//			succ=Comm.checkCalibrationCompleted();
+//			count++;
+//			if(count>3)
+//				break;
+//		}while(succ!=true);
+//    	execute(RobotAction.Backward);
+//    	Comm.sendToRobot("7");
+//		count=0;
+//		do{
+//			succ=Comm.checkCalibrationCompleted();
+//			count++;
+//			if(count>3)
+//				break;
+//		}while(succ!=true);
+//    }
     public void moveForwardMultiple(int n, GUI gui){
 //    	if(n==1){
 //    		execute(RobotAction.Forward);
@@ -255,7 +260,7 @@ public class Robot {
     	else if(!Algorithm.isSimulating && fastestRun){
 			Comm.sendToRobot("1,"+n);
     	}
-		else{
+		else if(!fastestRun){
 			for(int i=0;i<n;i++){
 	    		execute(RobotAction.Forward);
 	    		gui.getGridPanel().getGridContainer().drawGrid(map, this);
@@ -270,10 +275,71 @@ public class Robot {
     		if(fastestRun)
     			shortestPath.add(pos);
             pos.add(ori.toVector());
-    		while(!Comm.checkArduinoMessage(String.valueOf(i+1)));
-            Comm.sendToAndroid("position::"+pos.x+";;"+pos.y);
-            Comm.sendToAndroid("orientation::"+ori.ordinal());
-    		gui.getGridPanel().getGridContainer().drawGrid(map, this);
+            if(!Algorithm.isSimulating){
+            	while(!Comm.checkArduinoMessage(String.valueOf(i+1)));
+	            Comm.sendToAndroid("position::"+pos.x+";;"+pos.y);
+	            Comm.sendToAndroid("orientation::"+ori.ordinal());
+            }
+            else if(fastestRun){
+            	try {
+		            Thread.sleep(delay);                 //1000 milliseconds is one second.
+		        } catch(InterruptedException ex) {
+		            Thread.currentThread().interrupt();
+		        }
+            }
+	    	gui.getGridPanel().getGridContainer().drawGrid(map, this);
     	}
     }
+    public RobotAction getTargetMove(Direction b) {
+		switch(ori) {
+		case North:
+			switch(b) {
+			case North:
+				return RobotAction.Error;
+			case South:
+				return RobotAction.Backward;
+			case West:
+				return RobotAction.Left;
+			case East:
+				return RobotAction.Right;
+			}
+			break;
+		case South:
+			switch(b) {
+			case North:
+				return RobotAction.Backward;
+			case South:
+				return RobotAction.Error;
+			case West:
+				return RobotAction.Right;
+			case East:
+				return RobotAction.Left;
+			}
+			break;
+		case West:
+			switch(b) {
+			case North:
+				return RobotAction.Right;
+			case South:
+				return RobotAction.Left;
+			case West:
+				return RobotAction.Error;
+			case East:
+				return RobotAction.Backward;
+			}
+			break;
+		case East:
+			switch(b) {
+			case North:
+				return RobotAction.Left;
+			case South:
+				return RobotAction.Right;
+			case West:
+				return RobotAction.Backward;
+			case East:
+				return RobotAction.Error;
+			}
+		}
+		return RobotAction.Error;
+	}
 }

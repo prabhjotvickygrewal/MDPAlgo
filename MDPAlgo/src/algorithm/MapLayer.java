@@ -207,6 +207,29 @@ public class MapLayer {
             }
         }
     }
+    public boolean isRightFree(Robot robot){
+        Vector rightVector=robot.getOri().getRight().toVector();
+        Vector upVector=robot.getOri().toVector();
+        Vector downVector=robot.getOri().getDown().toVector();
+        boolean right_t=checkIsFree(robot.getPos().nAdd(rightVector.nMultiply(2)).nAdd(upVector));
+        boolean right_m=checkIsFree(robot.getPos().nAdd(rightVector.nMultiply(2)));
+        boolean right_b=checkIsFree(robot.getPos().nAdd(rightVector.nMultiply(2)).nAdd(downVector));
+        if(right_t && right_b && right_m)           //check whether can move to the right
+            return true;
+        return false;
+    }
+    public boolean isUpFree(Robot robot){
+        Vector rightVector=robot.getOri().getRight().toVector();
+        Vector upVector=robot.getOri().toVector();
+        Vector leftVector=robot.getOri().getLeft().toVector();
+        boolean up_l=checkIsFree(robot.getPos().nAdd(upVector.nMultiply(2)).nAdd(leftVector));
+        boolean up_m=checkIsFree(robot.getPos().nAdd(upVector.nMultiply(2)));
+        boolean up_r=checkIsFree(robot.getPos().nAdd(upVector.nMultiply(2)).nAdd(rightVector));
+        if(up_l && up_m && up_r)                    //check whether can move forward
+            return true;
+        else
+            return false;
+    }
     public boolean checkInsideBoundary(Vector v){
         return map.checkInsideBoundary(v);
     }
@@ -233,12 +256,21 @@ public class MapLayer {
         map.updatePointMap(states);
     }
     public boolean checkCovLimitReached(int covLimit){
-        int knownCount=0;
+//        int knownCount=0;
+//        for(int i=0;i<Map.MAX_X;i++)
+//            for(int j=0;j<Map.MAX_Y;j++)
+//                if(states[i][j]!=PointState.Unknown)
+//                    knownCount++;
+        return getCoverage() >= covLimit;
+    }
+    public double getCoverage(){
+    	int knownCount=0;
         for(int i=0;i<Map.MAX_X;i++)
             for(int j=0;j<Map.MAX_Y;j++)
                 if(states[i][j]!=PointState.Unknown)
                     knownCount++;
-        return knownCount*100/Map.MAX_X/Map.MAX_Y >= covLimit;
+        double cov = knownCount*100/Map.MAX_X/Map.MAX_Y;
+        return cov;
     }
     public String getFirstString(){
         return Descriptor.getFirstStringFromStates(states);
