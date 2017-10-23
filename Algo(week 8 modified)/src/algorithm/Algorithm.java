@@ -93,7 +93,7 @@ public class Algorithm {
 	        else {
 	        	sp.executeMovement(movement, gui);
 	        	alignToObstacle(gui);
-	        	Calibration.forceCalibration(robot, mapLayer);
+	        	Calibration.forceCalibration();
 	            do{
 	                while(!scan(gui));
 	                if(exploreComplete())
@@ -124,11 +124,13 @@ public class Algorithm {
         		gui.getGridPanel().getGridContainer().drawGrid(map, robot);
         		return;
         	}
-    	}
-    	if(simplifyActionEnabled && isOnEdge() && mapLayer.isRightFree(robot)){
-    		if(simplifyAction(gui))
+    		if(moveWithoutScan(gui))
     			return;
     	}
+//    	if(simplifyActionEnabled && isOnEdge() && mapLayer.isRightFree(robot)){
+//    		if(simplifyAction(gui))
+//    			return;
+//    	}
 
         if(mapLayer.isRightFree(robot)){
             robot.bufferAction(RobotAction.Right);
@@ -297,9 +299,56 @@ public class Algorithm {
         	return false;
     	}
     }
-//    public static boolean checkFastGetOut(){
-//    	
-//    }
+    public static boolean moveWithoutScan(GUI gui){
+    	Robot virtualR=new Robot(robot.getMap(),robot.getOri(),robot.getPos());
+    	virtualR.setVirtual(true);
+    	int count=0;
+    	boolean scanRequired=false;
+    	do{
+    		if(mapLayer.isRightFree(virtualR)){
+    			virtualR.execute(RobotAction.Right);
+    			virtualR.execute(RobotAction.Forward);
+            }
+            else{
+                while(!mapLayer.isUpFree(virtualR)){
+                	virtualR.execute(RobotAction.Left);
+                	if(mapLayer.checkScanRequired(virtualR.getPos(), virtualR.getOri())){
+                		scanRequired=true;
+        				if(count>1){
+    	    				ShortestPath sp=new ShortestPath(robot.getMap(),robot,true);
+    	    				ArrayList<RobotAction> mv=sp.findShortestPath(virtualR.getPos().x, virtualR.getPos().y, gui);
+    	    				if(mv!=null)
+    	    					sp.executeMovement(mv, gui);
+    	    				else
+    	    					break;
+    	    				robot.execute(robot.getTargetMove(virtualR.getOri()));
+    	    				while(!scan(gui));
+    	    				robot.execute(RobotAction.Forward);
+    	    				Calibration.forceCalibration();
+    	    				return true;
+        				}
+        			}
+                }
+                virtualR.execute(RobotAction.Forward);
+            }
+    		if(mapLayer.checkScanRequired(virtualR.getPos(), virtualR.getOri())){
+    			scanRequired=true;
+				if(count>1){
+    				ShortestPath sp=new ShortestPath(robot.getMap(),robot,true);
+    				ArrayList<RobotAction> mv=sp.findShortestPath(virtualR.getPos().x, virtualR.getPos().y, gui);
+    				if(mv!=null)
+    					sp.executeMovement(mv, gui);
+    				else
+    					break;
+    				robot.execute(robot.getTargetMove(virtualR.getOri()));
+    				Calibration.forceCalibration();
+    				return true;
+				}
+    		}
+    		count++;
+        }while(count<20 && !scanRequired);
+    	return false;
+    }
     public static boolean checkTimeLimitReached(){
         currentTime=System.currentTimeMillis();
         long diff=currentTime-startTime;

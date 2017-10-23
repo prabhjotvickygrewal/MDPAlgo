@@ -279,20 +279,21 @@ public class ShortestPath {
 				if(fCount > 0) {
 					robot.moveForwardMultiple(fCount,gui);
 					if(explorationMode) {
-						while(!Algorithm.scan(gui));
+//						while(!Algorithm.scan(gui));
+						Calibration.forceCalibration();
 					}
-					else{
+//					else{
 						gui.getGridPanel().getGridContainer().drawGrid(map, robot);
-					}
-						fCount = 0;
+//					}
+					fCount = 0;
 				}						
 				robot.execute(mm);
-				if(explorationMode) {
-					while(!Algorithm.scan(gui));
-				}
-				else{
+//				if(explorationMode) {
+//					while(!Algorithm.scan(gui));
+//				}
+//				else{
 					gui.getGridPanel().getGridContainer().drawGrid(map, robot);
-				}
+//				}
 				if(Algorithm.checkTimeLimitReached())
 					return;
 			}
