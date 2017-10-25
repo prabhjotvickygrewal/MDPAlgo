@@ -4,7 +4,6 @@ import map.*;
 import robot.*;
 import simulation.*;
 import communication.*;
-import java.util.LinkedList;
 import java.util.ArrayList;
 
 /**
@@ -23,10 +22,9 @@ public class Algorithm {
     public static boolean isSimulating;
     public static boolean androidEnabled=false;
     public static boolean simplifyActionEnabled=true;
-    public static boolean reduceScanningEnabled=false;
     public static Vector startPoint=new Vector(1,1);
     public static Vector endPoint=new Vector(13,18);
-    public static Vector wayPoint=new Vector(5,8);
+    public static Vector wayPoint=null;//new Vector(5,8);
     public Algorithm(Simulator simulator, boolean isSimulating){
         robot=new Robot();
         map=robot.getMap();
@@ -328,8 +326,8 @@ public class Algorithm {
     	    					break;
     	    				robot.execute(robot.getTargetMove(virtualR.getOri()));
     	    				while(!scan(gui));
+    	    				Calibration.calibrate();
     	    				robot.execute(RobotAction.Forward);
-    	    				Calibration.forceCalibration();
     	    				return true;
         				}
         			}
@@ -346,7 +344,7 @@ public class Algorithm {
     				else
     					break;
     				robot.execute(robot.getTargetMove(virtualR.getOri()));
-    				Calibration.forceCalibration();
+//    				Calibration.forceCalibration();
     				return true;
 				}
     		}

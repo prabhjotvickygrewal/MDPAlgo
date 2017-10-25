@@ -269,7 +269,7 @@ public class ShortestPath {
 	
 	public void executeMovement(ArrayList<RobotAction> movement, GUI gui){
 		if(!Algorithm.isSimulating && robot.isFastestRun() && !explorationMode)
-			Comm.sendToRobot("8,1");     //for executing fastest run
+			Comm.sendToRobot("8");     //for executing fastest run
 		
 		int fCount = 0;
 		for (RobotAction mm : movement) {
@@ -280,8 +280,8 @@ public class ShortestPath {
 				if(fCount > 0) {
 					robot.moveForwardMultiple(fCount,gui);
 					if(!robot.isFastestRun() && explorationMode) {
-//						while(!Algorithm.scan(gui));
-						Calibration.forceCalibration();
+						while(!Algorithm.scan(gui));
+						Calibration.calibrate();
 						gui.getGridPanel().getGridContainer().drawGrid(map, robot);
 					}
 					fCount = 0;
@@ -299,9 +299,9 @@ public class ShortestPath {
 		}
 		if(fCount > 0) {
 			robot.moveForwardMultiple(fCount,gui);
-			if(explorationMode) {
-				while(!Algorithm.scan(gui));
-			}
+//			if(explorationMode) {
+//				while(!Algorithm.scan(gui));
+//			}
 //			else{
 //				gui.getGridPanel().getGridContainer().drawGrid(map, robot);
 //			}
@@ -312,7 +312,7 @@ public class ShortestPath {
 		//for terminating message sending and update GUI according to execution
 		if(robot.isFastestRun() && !explorationMode){
 			if(!Algorithm.isSimulating)
-				Comm.sendToAndroid("9");
+				Comm.sendToRobot("9");
 			fCount = 0;
 			for (RobotAction mm : movement) {
 				if(mm == RobotAction.Forward) {

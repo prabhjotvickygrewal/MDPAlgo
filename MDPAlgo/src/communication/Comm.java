@@ -13,18 +13,19 @@ import simulation.GUI;
  * @author kokc0009
  */
 public class Comm {
-    private static Socket socket;
+	private static final String rpiAddress = "192.168.13.1";	//127.0.0.1
+	private static final int rpiPort = 12345;
+    private static Socket socket = null;
     private static OutputStreamWriter out;
     private static BufferedReader in;
     
     public Comm(){
         try{
-//            socket=new Socket(InetAddress.getByName("127.0.0.1/), 12345);
-            socket=new Socket(InetAddress.getByName("192.168.13.1"), 12345);
+            socket=new Socket(InetAddress.getByName(rpiAddress), rpiPort);
 //            out=new OutputStreamWriter(socket.getOutputStream());
+            socket.setTcpNoDelay(true);
             out=new OutputStreamWriter(socket.getOutputStream());
             in=new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        
         }
         catch(IOException e){
             e.printStackTrace();
@@ -168,7 +169,7 @@ public class Comm {
     			}
     			cur++;
     			int x=Integer.parseInt(fragment);
-    			
+
     			fragment=s.substring(cur, s.length());
     			int y=Integer.parseInt(fragment);
     			Algorithm.wayPoint= new Vector(x,y);
@@ -182,11 +183,13 @@ public class Comm {
     }
 
     public static void close(){
-    	try{
-    		socket.close();
-    	}
-    	catch(IOException e){
-    		e.printStackTrace();
+    	if(socket != null) {
+	    	try{
+	    		socket.close();
+	    	}
+	    	catch(IOException e){
+	    		e.printStackTrace();
+	    	}
     	}
     }
 }

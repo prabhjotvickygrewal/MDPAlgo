@@ -12,7 +12,7 @@ public class Calibration {
 	private static Robot robot;
 	private static MapLayer layer;
 	private static final int MAX_FRONTCOUNT=2;
-	private static final int MAX_RIGHTCOUNT=3;
+	private static final int MAX_RIGHTCOUNT=12;
 //	private static final int MAX_RIGHTCOUNT=4;
 
 	
@@ -96,9 +96,15 @@ public class Calibration {
 		rightCount++;
 	}
 	public static void forceCalibration() {
-		frontCount=5;
-		rightCount=5;
+		frontCount=MAX_FRONTCOUNT+1;
+		rightCount=MAX_RIGHTCOUNT+1;
 		calibrate();
+	}
+	public static void forceNextRightAlignment(){
+		rightCount=MAX_RIGHTCOUNT+1;
+	}
+	public static void forceNextFrontAlignment(){
+		frontCount=MAX_FRONTCOUNT+1;
 	}
 	public static void afterExploration(Robot robot){
 		if(!Algorithm.isSimulating){
@@ -112,7 +118,7 @@ public class Calibration {
 			if(count>3)
 				break;
 		}while(succ!=true);
-    	robot.execute(RobotAction.Backward);
+    	robot.execute(RobotAction.Left);
     	Comm.sendToRobot("7\n");
 		count=0;
 		do{
@@ -120,7 +126,7 @@ public class Calibration {
 			count++;
 			if(count>3)
 				break;
-		}while(succ!=true);
+		}while(succ!=true); 
 		}
 		frontCount=0;
 		rightCount=0;

@@ -32,6 +32,8 @@ public class SensorData {
         }
         cur++;
         temp=Integer.parseInt(s);
+        if(checkAlignmentRequired(temp))
+        	Calibration.forceNextRightAlignment();
         right_b=getBlockDistance(temp);
         s="";
         System.out.print(right_b+"  ");
@@ -42,6 +44,8 @@ public class SensorData {
         }
         cur++;
         temp=Integer.parseInt(s);
+        if(checkAlignmentRequired(temp))
+        	Calibration.forceNextFrontAlignment();
         up_r=getBlockDistance(temp);
         s="";
         System.out.print(up_r+"  ");
@@ -52,6 +56,8 @@ public class SensorData {
         }
         cur++;
         temp=Integer.parseInt(s);
+        if(checkAlignmentRequired(temp))
+        	Calibration.forceNextFrontAlignment();
         up_m=getBlockDistance(temp);
         s="";
         System.out.print(up_m+"  ");
@@ -63,6 +69,8 @@ public class SensorData {
         }
         cur++;
         temp=Integer.parseInt(s);
+        if(checkAlignmentRequired(temp))
+        	Calibration.forceNextFrontAlignment();
         up_l=getBlockDistance(temp);
         s="";
         System.out.print(up_l+"  ");
@@ -74,6 +82,8 @@ public class SensorData {
         }
         cur++;
         temp=Integer.parseInt(s);
+        if(checkAlignmentRequired(temp))
+        	Calibration.forceNextRightAlignment();
         right_t=getBlockDistance(temp);
         s="";
         System.out.print(right_t+"  ");
@@ -85,7 +95,7 @@ public class SensorData {
         }
         cur++;
         temp=Integer.parseInt(s);
-        if(temp>0 && temp<8){
+        if(temp>0 && temp<9){
         	left_t=1;
         }
         else{
@@ -105,5 +115,13 @@ public class SensorData {
             return temp/10+1;
         else
             return temp/10+2;
+    }
+    public boolean checkAlignmentRequired(int temp){
+    	if(temp==-99)
+    		return false;
+    	if(temp<(MapLayer.Sensor_ShortRange*10+5)) 
+    		return temp%10>2 && temp%10<8;
+    	
+    	return false;
     }
 }
