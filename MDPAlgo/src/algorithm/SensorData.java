@@ -120,7 +120,7 @@ public class SensorData {
     	if(temp==-99)
     		return false;
     	if(temp<(MapLayer.Sensor_ShortRange*10+5)) 
-    		return temp%10>2 && temp%10<8;
+    		return temp%10>1 && temp%10<9;
     	
     	return false;
     }

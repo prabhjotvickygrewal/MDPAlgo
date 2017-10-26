@@ -12,7 +12,7 @@ public class Calibration {
 	private static Robot robot;
 	private static MapLayer layer;
 	private static final int MAX_FRONTCOUNT=2;
-	private static final int MAX_RIGHTCOUNT=12;
+	private static final int MAX_RIGHTCOUNT=14;
 //	private static final int MAX_RIGHTCOUNT=4;
 
 	
@@ -127,6 +127,7 @@ public class Calibration {
 			if(count>3)
 				break;
 		}while(succ!=true); 
+    	robot.execute(RobotAction.Left);
 		}
 		frontCount=0;
 		rightCount=0;

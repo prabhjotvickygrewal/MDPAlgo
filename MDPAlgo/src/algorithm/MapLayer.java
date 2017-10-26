@@ -230,6 +230,18 @@ public class MapLayer {
         else
             return false;
     }
+    public boolean isUpUnknown(Robot robot){
+    	Vector rightVector=robot.getOri().getRight().toVector();
+        Vector upVector=robot.getOri().toVector();
+        Vector leftVector=robot.getOri().getLeft().toVector();
+        boolean up_l=checkIsUnknown(robot.getPos().nAdd(upVector.nMultiply(2)).nAdd(leftVector));
+        boolean up_m=checkIsUnknown(robot.getPos().nAdd(upVector.nMultiply(2)));
+        boolean up_r=checkIsUnknown(robot.getPos().nAdd(upVector.nMultiply(2)).nAdd(rightVector));
+        if(up_l || up_m || up_r)                    //check whether can move forward
+            return true;
+        else
+            return false;
+    }
     public boolean checkInsideBoundary(Vector v){
         return map.checkInsideBoundary(v);
     }

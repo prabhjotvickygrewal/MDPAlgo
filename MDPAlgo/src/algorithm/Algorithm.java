@@ -89,16 +89,18 @@ public class Algorithm {
 	        	unreachable.add(goal);
 	        else {
 	        	sp.executeMovement(movement, gui);
-	        	alignToObstacle(gui);
-	        	Calibration.forceCalibration();
-	            do{
-	                while(!scan(gui));
-	                if(exploreComplete())
-	                	break;
-	                Calibration.calibrate(robot, mapLayer);
-	                System.out.println(robot.getPos() + "  " + robot.getOri());
-	                followRightObstacle(gui);
-	            }while(!robot.getPos().equals(goal));    //explore until get to the original position again
+	        	alignToUnknown(gui);
+	        	while(!scan(gui));
+//	        	alignToObstacle(gui);
+//	        	Calibration.forceCalibration();
+//	            do{
+//	                while(!scan(gui));
+//	                if(exploreComplete())
+//	                	break;
+//	                Calibration.calibrate(robot, mapLayer);
+//	                System.out.println(robot.getPos() + "  " + robot.getOri());
+//	                followRightObstacle(gui);
+//	            }while(!robot.getPos().equals(goal));    //explore until get to the original position again
 	        }
         }while(!checkTimeLimitReached() && ! checkCovLimitReached(covLimit) && !exploreComplete());
         if(checkTimeLimitReached() || checkCovLimitReached(covLimit))
@@ -223,7 +225,15 @@ public class Algorithm {
     		count++;
     	}
     }
-    
+    public void alignToUnknown(GUI gui){
+    	int count=0;
+    	while(!mapLayer.isUpUnknown(robot) && count<4){
+            while(!scan(gui));
+    		robot.bufferAction(RobotAction.Left);
+    		robot.executeBuffered();
+    		count++;
+    	}
+    }
     public ArrayList<Vector> getRemainedPoint(){
     	ArrayList<Vector> remainedPoint=mapLayer.getRemainedPoint();
     	ArrayList<Vector> legalRemainedPoint=new ArrayList<>();
@@ -311,11 +321,13 @@ public class Algorithm {
     		if(mapLayer.isRightFree(virtualR)){
     			virtualR.execute(RobotAction.Right);
     			virtualR.execute(RobotAction.Forward);
+    			
             }
             else{
                 while(!mapLayer.isUpFree(virtualR)){
                 	virtualR.execute(RobotAction.Left);
-                	if(mapLayer.checkScanRequired(virtualR.getPos(), virtualR.getOri())){
+                	if(mapLayer.checkScanRequired(virtualR.getPos(), virtualR.getOri()) 
+                			|| (virtualR.getPos().equals(startPoint) && reachGoalZone())){
                 		scanRequired=true;
         				if(count>1){
     	    				ShortestPath sp=new ShortestPath(robot.getMap(),robot,true);
@@ -334,7 +346,8 @@ public class Algorithm {
                 }
                 virtualR.execute(RobotAction.Forward);
             }
-    		if(mapLayer.checkScanRequired(virtualR.getPos(), virtualR.getOri())){
+    		if(mapLayer.checkScanRequired(virtualR.getPos(), virtualR.getOri()) 
+    				|| (virtualR.getPos().equals(startPoint) && reachGoalZone())){
     			scanRequired=true;
 				if(count>1){
     				ShortestPath sp=new ShortestPath(robot.getMap(),robot,true);
@@ -348,6 +361,7 @@ public class Algorithm {
     				return true;
 				}
     		}
+    		
     		count++;
         }while(count<20 && !scanRequired);
     	return false;
@@ -366,7 +380,7 @@ public class Algorithm {
     public boolean exploreComplete(){
         return mapLayer.checkCovLimitReached(100);
     }
-    public boolean reachGoalZone() {
+    public static boolean reachGoalZone() {
     	return !mapLayer.checkIsUnknown(endPoint);
     }
 //    public boolean isRightFree(){
