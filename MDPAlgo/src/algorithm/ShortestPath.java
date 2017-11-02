@@ -290,9 +290,6 @@ public class ShortestPath {
 				if(explorationMode) {
 					gui.getGridPanel().getGridContainer().drawGrid(map, robot);
 				}
-//				else{
-//					gui.getGridPanel().getGridContainer().drawGrid(map, robot);
-//				}
 				if(explorationMode && Algorithm.checkTimeLimitReached())
 					return;
 			}
@@ -343,18 +340,18 @@ public class ShortestPath {
 	}
 	
 
-    public boolean isUpFree(){
-        Vector rightVector=robot.getOri().getRight().toVector();
-        Vector upVector=robot.getOri().toVector();
-        Vector leftVector=robot.getOri().getLeft().toVector();
-        boolean up_l=map.checkIsFree(robot.getPos().nAdd(upVector.nMultiply(2)).nAdd(leftVector));
-        boolean up_m=map.checkIsFree(robot.getPos().nAdd(upVector.nMultiply(2)));
-        boolean up_r=map.checkIsFree(robot.getPos().nAdd(upVector.nMultiply(2)).nAdd(rightVector));
-        if(up_l && up_m && up_r)                    //check whether can move forward
-            return true;
-        else
-            return false;
-    }
+//    public boolean isUpFree(){
+//        Vector rightVector=robot.getOri().getRight().toVector();
+//        Vector upVector=robot.getOri().toVector();
+//        Vector leftVector=robot.getOri().getLeft().toVector();
+//        boolean up_l=map.checkIsFree(robot.getPos().nAdd(upVector.nMultiply(2)).nAdd(leftVector));
+//        boolean up_m=map.checkIsFree(robot.getPos().nAdd(upVector.nMultiply(2)));
+//        boolean up_r=map.checkIsFree(robot.getPos().nAdd(upVector.nMultiply(2)).nAdd(rightVector));
+//        if(up_l && up_m && up_r)                    //check whether can move forward
+//            return true;
+//        else
+//            return false;
+//    }
 	//Returns the movements to execute to get from one direction to another
 //	private RobotAction getTargetMove(Direction a, Direction b) {
 //		switch(a) {

@@ -186,72 +186,20 @@ public class Robot {
     		ori=getDefaultOri();
     }
     public void explorationFinished() {
+		Calibration.frontAlignment();
+    	if(Calibration.checkRightAlignmentPossible()){
+    		execute(RobotAction.Right);
+    		Calibration.frontAlignment();
+    	}
+    	else{
+    		execute(RobotAction.Left);
+    		Calibration.frontAlignment();
+    	}
     	Direction target=getDefaultOri();
     	execute(getTargetMove(target));
     }
-//    public void calibrate() {
-//    	boolean succ;
-//    	execute(RobotAction.Backward);
-//    	Comm.sendToRobot("7");
-//		int count=0;
-//		do{
-//			succ=Comm.checkCalibrationCompleted();
-//			count++;
-//			if(count>3)
-//				break;
-//		}while(succ!=true);
-//    	execute(RobotAction.Backward);
-//    	Comm.sendToRobot("7");
-//		count=0;
-//		do{
-//			succ=Comm.checkCalibrationCompleted();
-//			count++;
-//			if(count>3)
-//				break;
-//		}while(succ!=true);
-//    }
-    public void moveForwardMultiple(int n, GUI gui){
-//    	if(n==1){
-//    		execute(RobotAction.Forward);
-//    	    if(!fastestRun)
-//    	    	gui.getGridPanel().getGridContainer().drawGrid(map, this);
-//    	    return;
-//    	}
 
-//    	while(n>MAX_STEP){
-//    		if(!Algorithm.isSimulating && !runShortestPath){
-//    			Comm.sendToRobot("1,"+MAX_STEP);
-//    			updateGUI(MAX_STEP, gui);
-//    			while(!Comm.checkActionCompleted());
-//    		}
-//    		else{
-//    			for(int i=0;i<MAX_STEP;i++){
-//    	    		execute(RobotAction.Forward);
-//    	    		gui.getGridPanel().getGridContainer().drawGrid(map, this);
-//    			}
-//    		}
-//    		n-=MAX_STEP;
-//    	}
-//    	if(n!=0){
-//    		if(n==1){
-//    			execute(RobotAction.Forward);
-//        		gui.getGridPanel().getGridContainer().drawGrid(map, this);
-//    		}
-////	    	pos.add(ori.toVector().nMultiply(n));
-//    		else{
-//		    	if(!Algorithm.isSimulating){
-//		    		Comm.sendToRobot("1,"+n);
-//		    		updateGUI(n, gui);
-//		    		while(!Comm.checkActionCompleted());
-//		    	}
-//		    	else{
-//	    			for(int i=0;i<n;i++){
-//	    	    		execute(RobotAction.Forward);
-//	    	    		gui.getGridPanel().getGridContainer().drawGrid(map, this);	    		
-//	    			}
-//		    	}
-//    		}
-//    	}
+    public void moveForwardMultiple(int n, GUI gui){
     	if(!Algorithm.isSimulating && !fastestRun){
 			Comm.sendToRobot("1,"+n);
 			updateGUI(n, gui);
